@@ -1,86 +1,13 @@
-// import React, { useState } from "react";
-// import axios from "axios";
-
-// const Login = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [message, setMessage] = useState("");
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       const response = await axios.post("http://localhost:5000/auth/login", {
-//         email,
-//         password,
-//       });
-//       setMessage("Login successful!");
-//       console.log(response.data); // Token or user info
-//     } catch (error) {
-//       setMessage("Login failed. Check your credentials.");
-//       console.error("Error logging in:", error.response?.data || error.message);
-//     }
-//   };
-
-//   //new begin
-//   const handleLogin = async () => {
-//     try {
-//       const response = await fetch("http://localhost:5000/auth/login", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ email, password }),
-//       });
-//       const data = await response.json();
-
-//       if (response.ok) {
-//         localStorage.setItem("token", data.token); // Store token in localStorage
-//         alert("Login successful!");
-//         // Navigate to another page if needed
-//       } else {
-//         alert(data.message || "Login failed.");
-//       }
-//     } catch (error) {
-//       console.error("Login error:", error);
-//     }
-//   };
-//   //end
-
-//   return (
-//     <div>
-//       <h2>Login</h2>
-//       <form onSubmit={handleSubmit}>
-//         <input
-//           type="email"
-//           placeholder="Email"
-//           value={email}
-//           onChange={(e) => setEmail(e.target.value)}
-//           required
-//         />
-//         <input
-//           type="password"
-//           placeholder="Password"
-//           value={password}
-//           onChange={(e) => setPassword(e.target.value)}
-//           required
-//         />
-//         <button type="submit">Login</button>
-//       </form>
-//       {message && <p>{message}</p>}
-//     </div>
-//   );
-// };
-
-// export default Login;
-
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { login } from "../store/authSlice";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const dispatch = useDispatch();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch("http://localhost:5000/auth/login", {
@@ -93,21 +20,28 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token); // Store token in localStorage
-        setMessage("Login successful!");
+        dispatch(login({ token: data.token, role: data.user.role }));
+        alert("Login successful!");
+        if (data.user.role === "admin") {
+          window.location.href = "/admin";
+        } else if (data.user.role === "recruiter") {
+          window.location.href = "/recruiter/dashboard";
+        } else if (data.user.role === "candidate") {
+          window.location.href = "/candidate/dashboard";
+        }
       } else {
-        setMessage(data.message || "Login failed. Check your credentials.");
+        alert(data.message || "Login failed.");
       }
     } catch (error) {
-      setMessage("An error occurred during login.");
       console.error("Login error:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
   return (
     <div>
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Email"
@@ -124,7 +58,6 @@ const Login = () => {
         />
         <button type="submit">Login</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 };

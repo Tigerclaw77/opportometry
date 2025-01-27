@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const CandidateRegister = () => {
+const CandidateRegistration = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,11 +16,11 @@ const CandidateRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:5000/candidate/register",
-        formData
-      );
-      alert("Registration successful!");
+      const response = await axios.post("http://localhost:5000/auth/register", {
+        ...formData,
+        role: "candidate", // Specify role here
+      });
+      alert(`Registration successful! Your user ID is ${response.data.userID}`);
     } catch (error) {
       console.error("Error registering:", error);
       alert("Registration failed.");
@@ -58,4 +58,4 @@ const CandidateRegister = () => {
   );
 };
 
-export default CandidateRegister;
+export default CandidateRegistration;

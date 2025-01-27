@@ -10,10 +10,26 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log("MongoDB connected successfully!");
-  } catch (err) {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1); // Exit with failure
+  } catch (error) {
+    console.error("Initial MongoDB connection failed:", error);
+
+    // Retry mechanism
+    setTimeout(connectDB, 5000); // Retry connection after 5 seconds
   }
 };
 
-module.exports = connectDB; // Export the function
+// Event listeners for mongoose connection
+mongoose.connection.on("connected", () => {
+  console.log("Mongoose connected to the database.");
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("Mongoose connection error:", err);
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.warn("Mongoose connection lost. Retrying...");
+  connectDB(); // Automatically retry if disconnected
+});
+
+module.exports = connectDB;

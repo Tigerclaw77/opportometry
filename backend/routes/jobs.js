@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Job = require("../models/Job");
+const verifyRole = require("../middleware/authMiddleware");
 
-// Get all job postings
-router.get("/jobs", async (req, res) => {
+// Get all job postings (public)
+router.get("/", async (req, res) => {
   try {
     const jobs = await Job.find();
     res.json(jobs);
@@ -12,17 +13,8 @@ router.get("/jobs", async (req, res) => {
   }
 });
 
-// Admin-specific route for job postings
-router.get("/admin/jobs", async (req, res) => {
-  try {
-    const jobs = await Job.find();
-    res.json(jobs); // In a real-world app, add authentication/authorization
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post("/jobs", async (req, res) => {
+// Post a new job (protected for recruiters)
+router.post("/", verifyRole("recruiter"), async (req, res) => {
   try {
     const job = new Job(req.body);
     const newJob = await job.save();
@@ -32,17 +24,11 @@ router.post("/jobs", async (req, res) => {
   }
 });
 
-router.get("/test", async (req, res) => {
+// Get all jobs (protected for admins)
+router.get("/admin/jobs", verifyRole("admin"), async (req, res) => {
   try {
-    const testJob = new Job({
-      title: "Test Job",
-      description: "This is a test job",
-      company: "Test Company",
-      location: "Test Location",
-      salary: 1000,
-    });
-    const savedJob = await testJob.save();
-    res.json(savedJob);
+    const jobs = await Job.find();
+    res.json(jobs);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

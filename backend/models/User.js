@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid"); // Generate unique IDs
 
 const userSchema = new mongoose.Schema({
+  userID: { type: String, default: uuidv4, unique: true }, // Unique user identifier
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, index: true }, // Unique and indexed for quick lookups
   password: { type: String, required: true }, // Hashed password
   role: { type: String, enum: ["candidate", "recruiter"], required: true },
+  status: { type: String, enum: ["active", "inactive"], default: "active" }, // Track account status
   createdAt: { type: Date, default: Date.now },
 });
 

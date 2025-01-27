@@ -1,38 +1,21 @@
 import React, { useState, useEffect } from "react";
+import axiosInstance from "../../axiosInstance";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem("token"); // Retrieve token from localStorage
-    if (!token) {
-      setMessage("You must log in as an Admin to view this page.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:5000/users", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`, // Send token for authentication
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Access denied");
-      }
-
-      const data = await response.json();
-      setUsers(data);
-      setMessage(""); // Clear any error message
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setMessage("Access denied. Ensure you are logged in as an Admin.");
-    }
-  };
-
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axiosInstance.get("/users");
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setMessage("Access denied. Ensure you are logged in as an Admin.");
+      }
+    };
+
     fetchUsers();
   }, []);
 

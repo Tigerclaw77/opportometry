@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../axiosInstance";
 
-const RecruiterRegistration = () => {
+const Register = ({ role }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,20 +17,33 @@ const RecruiterRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/auth/register", {
+      const response = await axiosInstance.post("/register", {
         ...formData,
-        role: "recruiter", // Specify role here
+        role,
       });
-      alert(`Registration successful! Your user ID is ${response.data.userID}`);
+      setMessage("Registration successful!");
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
     } catch (error) {
       console.error("Error registering:", error);
-      alert("Registration failed.");
+      setMessage(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     }
   };
 
   return (
     <div>
-      <h2>Recruiter Registration</h2>
+      <h2>
+        {role === "recruiter"
+          ? "Recruiter Registration"
+          : "Candidate Registration"}
+      </h2>
+      {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -37,6 +51,7 @@ const RecruiterRegistration = () => {
           placeholder="Full Name"
           value={formData.name}
           onChange={handleChange}
+          required
         />
         <input
           type="email"
@@ -44,6 +59,7 @@ const RecruiterRegistration = () => {
           placeholder="Email"
           value={formData.email}
           onChange={handleChange}
+          required
         />
         <input
           type="password"
@@ -51,11 +67,14 @@ const RecruiterRegistration = () => {
           placeholder="Password"
           value={formData.password}
           onChange={handleChange}
+          required
         />
-        <button type="submit">Register</button>
+        <button type="submit">
+          Register as {role === "recruiter" ? "Recruiter" : "Candidate"}
+        </button>
       </form>
     </div>
   );
 };
 
-export default RecruiterRegistration;
+export default Register;
