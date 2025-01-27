@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./styles.css";
 
 const AdminJobs = () => {
   const [job, setJob] = useState({
@@ -18,7 +19,7 @@ const AdminJobs = () => {
     e.preventDefault();
     try {
       /* eslint-disable-next-line */
-      const response = await axios.post("http://localhost:5000/api/jobs", job);
+      const response = await axios.post("http://localhost:5000/jobs", job);
       alert("Job added successfully");
       setJob({
         title: "",

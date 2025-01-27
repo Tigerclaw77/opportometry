@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Job = require("../models/Job"); // Adjust the path if needed
+const Job = require("../models/Job");
 
 // Get all job postings
 router.get("/jobs", async (req, res) => {
@@ -12,25 +12,22 @@ router.get("/jobs", async (req, res) => {
   }
 });
 
-// Create a new job posting
-// router.post("/jobs", async (req, res) => {
-//   const job = new Job(req.body);
-//   try {
-//     const newJob = await job.save();
-//     res.status(201).json(newJob);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// });
+// Admin-specific route for job postings
+router.get("/admin/jobs", async (req, res) => {
+  try {
+    const jobs = await Job.find();
+    res.json(jobs); // In a real-world app, add authentication/authorization
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 router.post("/jobs", async (req, res) => {
-  console.log("POST /jobs called with body:", req.body);
-  const job = new Job(req.body);
   try {
+    const job = new Job(req.body);
     const newJob = await job.save();
     res.status(201).json(newJob);
   } catch (error) {
-    console.error("Error saving job:", error.message);
     res.status(400).json({ message: error.message });
   }
 });
