@@ -62,7 +62,7 @@ function App() {
           }
         />
         <Route
-          path="/recruiter/editjob"
+          path="/recruiter/editjob/:jobId"
           element={
             <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
               <EditJob />

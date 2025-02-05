@@ -1,337 +1,126 @@
 /* Base Styles */
+:root {
+  --primary-color: #005A78; /* Deep Teal */
+  --secondary-color: #0085B2; /* Brighter Blue */
+  --background-color: #F3F7F9;
+  --text-color: #222; /* Darker Text */
+  --button-hover: #E63946; /* Red Hover Effect */
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
-  background-color: ivory;
-  /* background-image: url("https://www.toptal.com/designers/subtlepatterns/uploads/45degreee_fabric.png"); */
-  background-repeat: repeat;
-  color: #333;
+  font-family: 'Arial', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
-/* Containers */
 .container {
   width: 100%;
   margin: 10px auto;
-  padding: 15px;
+  padding: 20px;
   box-sizing: border-box;
 }
 
 /* Navigation */
 nav {
-  background-color: #333;
-  color: #fff;
-  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 nav a {
-  color: #fff;
+  color: white;
   text-decoration: none;
   margin-left: 15px;
+  font-weight: 600;
+}
+
+nav a:hover {
+  color: #B0DAF1; /* Light Blue for Subtle Contrast */
+  transition: color 0.3s ease;
 }
 
 /* Buttons */
 button {
-  padding: 10px;
+  padding: 12px 20px;
   font-size: 16px;
-  background-color: #003366;
-  color: #fff;
+  background-color: var(--primary-color);
+  color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  margin: 0 0 5px 0;
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
-  /* background-color: #0056b3; */
-  background-color: orangered;
+  transform: scale(1.05); /* Slight enlargement */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
 }
 
 /* Forms */
 form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-input,
-textarea,
-select,
-button {
+input, textarea, select {
   width: 100%;
   font-size: 16px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
 }
 
 textarea {
   resize: none;
 }
 
-input:focus,
-textarea:focus,
-select:focus,
-button:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--secondary-color);
 }
 
-/* Pages */
-.home {
-  text-align: center;
-  padding: 20px;
-}
-
+/* Dashboard */
 .dashboard {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
 
-.job-listing {
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-}
-
 .dashboard .card {
-  background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  flex: 1 1 calc(50% - 10px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  text-align: center;
+  transition: transform 0.2s ease;
 }
 
-.dashboard .card h3 {
-  margin: 0;
-  margin-bottom: 10px;
-}
-
-.dashboard .card p {
-  margin: 0;
+.dashboard .card:hover {
+  transform: translateY(-5px);
 }
 
 /* Job Listings */
 .job-listing {
-  padding: 10px;
+  padding: 15px;
   border-bottom: 1px solid #ddd;
 }
 
 .job-listing h3 {
+  font-size: 22px;
   margin: 0;
-  font-size: 18px;
-}
-
-.job-listing p {
-  margin: 5px 0;
 }
 
 /* Footer */
 footer {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 10px 20px;
-}
-
-/* Media Queries */
-/* Tablets */
-@media (min-width: 600px) {
-  .container {
-    max-width: 540px;
-  }
-
-  form {
-    gap: 15px;
-  }
-
-  button {
-    font-size: 18px;
-    padding: 12px 25px;
-  }
-
-  .dashboard .card {
-    flex: 1 1 calc(33.333% - 20px);
-  }
-}
-
-/* Laptops and Desktops */
-@media (min-width: 1024px) {
-  body {
-    background-color: ivory;
-  }
-
-  .container {
-    max-width: 960px;
-  }
-
-  form {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  input,
-  textarea,
-  select {
-    flex: 1 1 calc(50% - 20px);
-  }
-
-  button {
-    flex: 1 1 100%;
-    font-size: 20px;
-  }
-
-  .dashboard {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-}
-
-.job-list {
-  text-align: center;
-}
-
-.job-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.job-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 1rem;
-  width: 200px;
-  cursor: pointer;
-  background-color: #f9f9f9;
-  transition: box-shadow 0.3s;
-}
-
-.job-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  text-align: left;
-  position: relative;
-}
-
-.modal-content h2 {
-  margin-top: 0;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-top: 1rem;
-}
-
-.modal-actions button {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.modal-actions button:hover {
-  background-color: #0056b3;
-}
-
-.close-modal {
-  position: absolute;
-  width: 20px;
-  top: 10px; /* Position from the top */
-  right: 20px; /* Position from the right */
-  background: none; /* Remove default background */
-  border: none; /* Remove border */
-  font-size: 1.5rem; /* Larger font for better visibility */
-  font-weight: bold;
-  color: gray; /* Gray color for the X */
-  cursor: pointer; /* Show pointer on hover */
-  padding: 0; /* Remove padding */
-}
-
-.close-modal:hover {
-  color: black; /* Darken the X on hover */
-}
-
-/* Job Form */
-/* General input styles */
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form textarea,
-form select {
-  width: 80%; /* Adjust width as needed */
-  max-width: 400px; /* Prevent it from being too large */
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  margin: 5px 0;
-}
-
-/* Checkboxes and radio buttons */
-form input[type="checkbox"],
-form input[type="radio"] {
-  width: auto; /* Prevent them from taking up too much space */
-  margin-right: 10px;
-}
-
-/* Labels for checkboxes and radio buttons */
-form label {
-  display: inline-block;
-  margin-right: 20px; /* Space between options */
+  text-align: center;
+  padding: 15px 0;
   font-size: 14px;
-}
-
-/* Form container */
-form {
-  max-width: 600px; /* Limit overall form width */
-  margin: 0 auto; /* Center the form */
-}
-
-/* Buttons */
-form button {
-  width: auto; /* Allow buttons to size naturally */
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-form button:hover {
-  background-color: #0056b3;
 }

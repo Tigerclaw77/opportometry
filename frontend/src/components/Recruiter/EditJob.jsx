@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+
 import axios from "axios";
 
 const EditJob = ({ jobToEdit, onSuccess }) => {
+  const { jobId } = useParams();
   const [formData, setFormData] = useState({
     id: "", // This will hold the job ID when editing
     title: "",
