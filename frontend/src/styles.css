@@ -24,7 +24,7 @@ body {
 
 /* Navigation */
 nav {
-  background-color: var(--primary-color);
+  /* background-color: var(--primary-color); */
   color: white;
   padding: 15px 20px;
   display: flex;
@@ -117,10 +117,10 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Footer */
-footer {
+/* footer {
   background-color: var(--primary-color);
   color: white;
   text-align: center;
   padding: 15px 0;
   font-size: 14px;
-}
+} */

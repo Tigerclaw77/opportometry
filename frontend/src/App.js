@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
+import Header from "./components/Header";
 import Home from "./components/Home";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import RecruiterDashboard from "./components/Recruiter/RecruiterDashboard";
@@ -18,6 +19,7 @@ import "./styles.css";
 function App() {
   return (
     <Router>
+      <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/login" element={<Login />} />

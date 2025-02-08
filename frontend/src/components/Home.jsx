@@ -4,11 +4,25 @@ import "./Home.css";
 
 const Home = () => (
   <div className="home">
-    <h1 className="home-title">
+    {/* <h1 className="home-title">
       jobs<span className="highlight">.</span>vision
-    </h1>
-    <p className="home-subtitle">Your gateway to new opportunities.</p>
-
+    </h1> */}
+    {/* <p className="home-subtitle">Your gateway to new opportunities.</p> */}
+{/* Banner Section */}
+<div className="banner">
+        <div className="banner-text">
+          <h2>Connecting Eyecare Professionals with New Opportunities</h2>
+          <p>For doctors, opticians, techs, receptionists, and more.</p>
+        </div>
+        <div className="banner-images">
+          <img src="/images/eyecare-doctor.jpg" alt="Eyecare Doctor" />
+          <img src="/images/optician.jpg" alt="Optician" />
+          <img src="/images/technician.jpg" alt="Technician" />
+          <img src="/images/receptionist.jpg" alt="Receptionist" />
+        </div>
+      </div>
+      
+      {/* Main Content */}
     <div className="options-container">
       <Link to="/recruiter/register" className="option-card">
         <img src="/images/recruiter.jpg" alt="Recruiter" />
