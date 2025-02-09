@@ -1,0 +1,27 @@
+.pricing-table table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.pricing-table th,
+.pricing-table td {
+  padding: 15px;
+  border: 1px solid #ddd;
+}
+
+.pricing-table th {
+  background-color: #005a78;
+  color: white;
+}
+
+.pricing-table td {
+  background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pricing-table table {
+    font-size: 14px;
+  }
+}

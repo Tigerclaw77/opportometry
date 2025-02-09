@@ -1,14 +1,14 @@
-/* General Styles */
 :root {
-  --primary-color: #005A78; /* Deep Teal */
-  --accent-color: #0085B2; /* Vibrant Blue */
-  --highlight-color: #E63946; /* Soft Red */
-  --background-light: #F3F7F9; /* Light Gray */
+  --primary-color: #005a78; /* Deep Teal */
+  --accent-color: #0085b2; /* Vibrant Blue */
+  --highlight-color: #e63946; /* Soft Red */
+  --background-light: #f3f7f9; /* Light Gray */
   --text-dark: #222; /* High Contrast */
-  --text-light: #FFFFFF;
+  --text-light: #ffffff;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   min-height: 100vh;
   margin: 0;
@@ -18,179 +18,232 @@ html, body {
 
 body {
   font-family: "Inter", sans-serif;
-  background: 
-    radial-gradient(circle at 30% 20%, rgba(0, 90, 200, 0.9) 10%, transparent 80%),
-    radial-gradient(circle at 80% 80%, rgba(0, 50, 150, 0.8) 20%, transparent 90%),
-    linear-gradient(135deg, rgba(0, 120, 255, 0.6) 0%, rgba(0, 60, 180, 0.8) 100%);
+  background: radial-gradient(
+      circle at 30% 20%,
+      rgba(0, 90, 200, 0.9) 10%,
+      transparent 80%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(0, 50, 150, 0.8) 20%,
+      transparent 90%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(0, 120, 255, 0.6) 0%,
+      rgba(0, 60, 180, 0.8) 100%
+    );
   background-size: cover;
   background-repeat: no-repeat;
-  color: #D6E8FF;
+  color: #d6e8ff;
   margin: 0;
   padding: 0;
 }
 
 .home {
   text-align: center;
-  padding: 50px 20px;
+  padding: 10px 20px;
 }
 
-.home-title {
-  font-weight: 700;
-  font-size: 38px;
+.banner-text-upper {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
   color: var(--text-light);
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 0 0 20px;
 }
 
-.highlight {
-  color: var(--highlight-color);
-}
-
-.home-subtitle {
+.banner-text-lower {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
   color: var(--text-light);
-  margin-bottom: 30px;
-  font-size: 20px;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 20px;
 }
 
-/* 🔹 Banner Section */
+.mobile-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 .banner {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 1200px;
-  margin: 20px auto;
-  text-align: center;
-  padding: 15px;
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.2), rgba(0, 60, 180, 0.4));
-  border-radius: 12px;
-}
-
-.banner-text {
-  margin-bottom: 10px;
-}
-
-.banner-text h2 {
-  font-size: 22px;
-  color: var(--primary-color);
-  font-weight: 700;
-}
-
-.banner-text p {
-  font-size: 16px;
-  color: #333;
+  overflow: hidden;
 }
 
 .banner-images {
-  display: flex;
-  gap: 8px;
-  overflow: hidden;
-  width: 100%;
+  display: none;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  gap: 10px;
 }
 
 .banner-images img {
+  flex-grow: 1;
   width: 100%;
-  max-width: 200px;
-  height: auto;
+  height: 200px;
   object-fit: cover;
+  object-position: center;
   border-radius: 8px;
 }
 
-/* 🔹 Options Section */
-.options-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-/* 🔹 Modern Buttons */
-.option-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 60%;
+.option-button {
+  display: block;
+  width: 80%;
   max-width: 250px;
-  height: auto;
-  text-align: center;
-  background: white;
-  color: var(--text-dark);
+  padding: 12px;
   font-size: 16px;
   font-weight: bold;
-  text-decoration: none;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: black;
+  background: white;
+  border-radius: 6px;
+  text-align: center;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 10px auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-.option-card img {
-  display: none; /* Hidden on small screens */
-}
-
-.option-card:hover {
+.option-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* 🔹 Responsive Grid for Desktop */
+.option-card {
+  display: none;
+}
+
+/* ? SCROLLING CONTAINER */
+/* ? SCROLLING CONTAINER */
+/* ? SCROLLING CONTAINER */
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(
+      -50%
+    ); /* ✅ Moves exactly half the duplicated content */
+  }
+}
+
+.scrolling-container {
+  visibility: hidden;
+  opacity: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.scrolling-content {
+  display: flex;
+  gap: 0px; /* ✅ Prevents gaps between images */
+  flex-shrink: 0; /* ✅ Prevents images from resizing */
+  width: max-content; /* ✅ Allows dynamic resizing */
+  animation: scroll 30s linear infinite; /* ✅ Smooth, continuous animation */
+}
+
+.scrolling-content img {
+  height: 150px;
+  object-fit: cover;
+  border-radius: 0px;
+  flex: 0 0 auto; /* ✅ Prevents image distortion */
+}
+
+/* ! MEDIA QUERY */
+/* ! MEDIA QUERY */
+/* ! MEDIA QUERY */
+
 @media (min-width: 768px) {
-  .home-title {
-    font-size: 48px;
-  }
-
-  .banner {
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 20px;
-  }
-
   .banner-text {
-    text-align: left;
-    max-width: 50%;
+    font-size: 24px;
+  }
+
+  .mobile-banner {
+    display: none;
   }
 
   .banner-images {
-    justify-content: flex-end;
+    display: flex;
   }
 
   .banner-images img {
-    max-width: 220px;
+    height: 220px;
   }
 
   .options-container {
-    margin-top: 60px;
+    display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: flex-start;
     gap: 20px;
   }
 
+  .option-button {
+    display: none;
+  }
+
   .option-card {
-    width: 280px;
-    height: 320px;
-    font-size: 18px;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 250px;
+    text-align: center;
+    background: white;
+    color: var(--text-dark);
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
   }
 
   .option-card img {
     width: 100%;
-    height: 60%;
+    height: 150px;
     object-fit: cover;
-    border-radius: 12px 12px 0 0;
-    display: block; /* Visible on larger screens */
+    border-radius: 8px 8px 0 0;
+    display: block;
   }
 
   .option-card h3 {
-    flex-grow: 1;
+    padding: 10px;
+  }
+
+  .option-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .scrolling-container {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .component-wrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 100%;
-    padding: 14px;
+    flex-direction: column;
+    gap: 40px; /* Space between components */
   }
 }

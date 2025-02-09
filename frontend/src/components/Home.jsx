@@ -1,45 +1,91 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Home.css";
+import OptionsSection from "./OptionsSection";
+import PricingTable from "./PricingTable";
 
-const Home = () => (
-  <div className="home">
-    {/* <h1 className="home-title">
-      jobs<span className="highlight">.</span>vision
-    </h1> */}
-    {/* <p className="home-subtitle">Your gateway to new opportunities.</p> */}
-{/* Banner Section */}
-<div className="banner">
-        <div className="banner-text">
-          <h2>Connecting Eyecare Professionals with New Opportunities</h2>
-          <p>For doctors, opticians, techs, receptionists, and more.</p>
-        </div>
-        <div className="banner-images">
-          <img src="/images/eyecare-doctor.jpg" alt="Eyecare Doctor" />
+const Home = () => {
+  const [user, setUser] = useState(null); // Default: Not logged in
+
+  useEffect(() => {
+    // Check localStorage for user data
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
+
+  // Function to manually set a user role for testing
+  const handleUserChange = (role, tier = 0) => {
+    const newUser = role ? { role, tier } : null;
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser)); // Persist across refreshes
+  };
+
+  return (
+    <div className="home">
+      {/* 🔹 Banner Section */}
+      <p className="banner-text-upper">
+        Connecting Eyecare Professionals with New Opportunities
+      </p>
+
+      {/* Mobile Banner (Hidden on Large Screens) */}
+      <img
+        src="/images/mobile-banner.jpg"
+        alt="Eyecare Banner"
+        className="mobile-banner"
+      />
+
+      {/* Scrolling Carousel (Hidden on Small Screens) */}
+      <div className="scrolling-container">
+        <div className="scrolling-content">
+          <img src="/images/eyedoctor.jpg" alt="Eyecare Doctor" />
           <img src="/images/optician.jpg" alt="Optician" />
-          <img src="/images/technician.jpg" alt="Technician" />
+          <img src="/images/tech.jpg" alt="Technician" />
+          <img src="/images/staff.jpg" alt="Staff" />
+          <img src="/images/eyedoctor2.jpg" alt="Eyecare Doctor" />
           <img src="/images/receptionist.jpg" alt="Receptionist" />
+          <img src="/images/admin.jpg" alt="Admin Staff" />
+          {/* duplicate images to stabiliize looping animation */}
+          <img src="/images/eyedoctor.jpg" alt="Eyecare Doctor" />
+          <img src="/images/optician.jpg" alt="Optician" />
+          <img src="/images/tech.jpg" alt="Technician" />
+          <img src="/images/staff.jpg" alt="Staff" />
+          <img src="/images/eyedoctor2.jpg" alt="Eyecare Doctor" />
+          <img src="/images/receptionist.jpg" alt="Receptionist" />
+          <img src="/images/admin.jpg" alt="Admin Staff" />
         </div>
       </div>
-      
-      {/* Main Content */}
-    <div className="options-container">
-      <Link to="/recruiter/register" className="option-card">
-        <img src="/images/recruiter.jpg" alt="Recruiter" />
-        <h3>Register as a Recruiter</h3>
-      </Link>
 
-      <Link to="/candidate/register" className="option-card">
-        <img src="/images/candidate.jpg" alt="Candidate" />
-        <h3>Register as a Candidate</h3>
-      </Link>
+      <p className="banner-text-lower">
+        Doctors • Opticians • Techs • Receptionists • Office Managers • Billers
+        • Support Staff
+      </p>
 
-      <Link to="/jobs" className="option-card">
-        <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
-        <h3>Browse Jobs</h3>
-      </Link>
+      {/* 🔹 User Role Selection for Testing */}
+      <div className="test-controls">
+        <p>🔧 Change User Role for Testing:</p>
+        <button onClick={() => handleUserChange(null)}>Logout (Guest)</button>
+        <button onClick={() => handleUserChange("recruiter")}>Recruiter</button>
+        <button onClick={() => handleUserChange("candidate", 0)}>
+          Candidate (Free)
+        </button>
+        <button onClick={() => handleUserChange("candidate", 1)}>
+          Candidate (Level 1)
+        </button>
+        <button onClick={() => handleUserChange("candidate", 2)}>
+          Candidate (Level 2)
+        </button>
+      </div>
+
+      {/* 🔹 Pass user data to OptionsSection */}
+      <div className="component-wrapper">
+        <OptionsSection user={user} />
+        <h3>Search and apply for free!</h3>
+        <PricingTable user={user} />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Home;
