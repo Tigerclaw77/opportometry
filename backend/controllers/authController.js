@@ -2,70 +2,46 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Login User
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password." });
-    }
-
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password." });
-    }
-
-    // Generate token with userID and role
-    const token = jwt.sign(
-      { userID: user.userID, role: user.role }, // Use userID instead of _id for frontend compatibility
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // Send user data and token
-    res.json({
-      token,
-      user: {
-        userID: user.userID,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
+// ✅ Allowed Companies & Their Official Domains
+const approvedCompanies = {
+  walmart: "walmart.com",
+  luxottica: "luxottica.com",
+  visionworks: "visionworks.com",
 };
 
-// Register User
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, company } = req.body;
+    const domain = email.split("@")[1];
 
+    // ✅ Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists." });
-    }
+    if (existingUser) return res.status(400).json({ message: "User already exists." });
 
+    // ✅ Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Check if recruiter is trying to claim a restricted company
+    let isCompanyVerified = false;
+    if (role === "recruiter" && company && approvedCompanies[company]) {
+      isCompanyVerified = domain === approvedCompanies[company]; // ✅ Only auto-approve if domain matches
+    }
 
     const user = new User({
       name,
       email,
       password: hashedPassword,
       role,
+      company, // ✅ Store the company they are associated with
+      isCompanyVerified,
     });
 
     await user.save();
-    res.status(201).json({ message: "User registered successfully." });
+
+    res.status(201).json({ message: "User registered successfully. If you are a recruiter posting for a company, verification may be required." });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
   }
 };
 
-module.exports = { loginUser, registerUser };
+module.exports = { registerUser };

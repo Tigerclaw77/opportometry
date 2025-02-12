@@ -1,0 +1,45 @@
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFacebook, faXTwitter, faInstagram } from "@fortawesome/free-brands-svg-icons";
+import "../styles/Footer.css";
+
+const Footer = () => {
+  return (
+    <footer className="footer">
+      <div className="footer-container">
+        {/* Left Section - Brand Name */}
+        <div className="footer-brand">
+          <h2>jobs.vision</h2>
+        </div>
+
+        {/* Middle Section - Navigation Links */}
+        <div className="footer-links">
+          <a href="/about">About</a>
+          <a href="/jobs">Jobs</a>
+          <a href="/contact">Contact</a>
+          <a href="/privacy">Privacy Policy</a>
+        </div>
+
+        {/* Right Section - Social Media */}
+        <div className="footer-social">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            <FontAwesomeIcon icon={faFacebook} />
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+            <FontAwesomeIcon icon={faXTwitter} />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <FontAwesomeIcon icon={faInstagram} />
+          </a>
+        </div>
+      </div>
+
+      {/* Bottom Section - Copyright */}
+      <div className="footer-bottom">
+        <p>&copy; {new Date().getFullYear()} Passport™. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

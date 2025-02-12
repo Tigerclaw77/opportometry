@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./database");
+const connectDB = require("./config/database");
 const jobRoutes = require("./routes/jobs");
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 const registerRoutes = require("./routes/register"); // Merged registration routes
+const recommendationsRoutes = require("./routes/recommendations");
+
 
 dotenv.config();
 
@@ -22,6 +24,7 @@ app.use("/auth", authRoutes);
 app.use("/jobs", jobRoutes);
 app.use("/register", registerRoutes);
 app.use("/users", userRoutes);
+app.use("/recommendations", recommendationsRoutes);
 
 // Default route
 app.get("/", (req, res) => {

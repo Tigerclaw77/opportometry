@@ -1,29 +1,19 @@
-// const mongoose = require("mongoose");
-
-// const jobSchema = new mongoose.Schema({
-//   title: { type: String, required: true },
-//   description: { type: String, required: true },
-//   company: { type: String, required: true },
-//   location: { type: String, required: true },
-//   salary: { type: Number },
-//   datePosted: { type: Date, default: Date.now },
-// });
-
-// const Job = mongoose.model("Job", jobSchema);
-
-// module.exports = Job;
-
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const jobSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
+  corporation: { type: String, required: true, index: true }, // ✅ Indexed for faster queries
   company: { type: String, required: true },
-  location: { type: String, required: true },
-  salary: { type: Number, required: true },
-  jobType: [{ type: String }], // e.g., ['Full-time', 'Part-time']
-  position: { type: String }, // e.g., 'Leaseholder', 'Employee'
-  recruiterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  hours: { type: String, enum: ["part-time", "full-time", "per diem"], required: true },
+  role: { type: String, enum: ["Optometrist", "Ophthalmologist", "Optician"], required: true, index: true }, // ✅ Indexed
+  practiceMode: { type: String, enum: ["employed", "contract", "lease", "associate"], required: true },
+  status: { type: String, enum: ["open", "closed", "expired"], default: "open" }, // ✅ Track job status
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  createdAt: { type: Date, default: Date.now },
+
+  // ✅ Track which candidates saved this job
+  savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
-module.exports = mongoose.model('Job', jobSchema);
+module.exports = mongoose.model("Job", jobSchema);

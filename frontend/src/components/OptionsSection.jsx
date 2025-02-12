@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./Home.css";
+import "../styles/Home.css";
 
 const OptionsSection = ({ user }) => {
   return (
@@ -33,21 +33,6 @@ const OptionsSection = ({ user }) => {
           </Link>
         </>
       )}
-
-      {/* EVERYONE CAN SEE BROWSE JOBS */}
-      {/* ✅ Button for Small Screens */}
-      <button
-        className="option-button"
-        onClick={() => (window.location.href = "/jobs")}
-      >
-        Browse Jobs
-      </button>
-
-      {/* ✅ Card for Large Screens */}
-      <Link to="/jobs" className="option-card">
-        <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
-        <h3>Browse Jobs</h3>
-      </Link>
 
       {/* RECRUITER OPTIONS */}
       {user?.role === "recruiter" && (
@@ -104,6 +89,19 @@ const OptionsSection = ({ user }) => {
           </Link>
         </>
       )}
+
+      {/* BROWSE JOBS - ALWAYS LAST */}
+      <button
+        className="option-button"
+        onClick={() => (window.location.href = "/jobs")}
+      >
+        Browse Jobs
+      </button>
+      
+      <Link to="/jobs" className="option-card">
+        <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
+        <h3>Browse Jobs</h3>
+      </Link>
     </div>
   );
 };

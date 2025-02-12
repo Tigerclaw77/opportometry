@@ -1,6 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
+import Logout from "./components/Logout";
+import LogoutSuccess from "./components/LogoutSuccess";
 import Header from "./components/Header";
 import Home from "./components/Home";
 import AdminDashboard from "./components/Admin/AdminDashboard";
@@ -13,6 +15,10 @@ import Users from "./components/Users";
 import AddJob from "./components/Recruiter/AddJob";
 import EditJob from "./components/Recruiter/EditJob";
 import ProtectedRoute from "./ProtectedRoute";
+import Footer from "./components/Footer";
+import GlassCard from "./components/GlassCard";
+import GlassDashboard from "./components/GlassDashboard";
+import GlassForm from "./components/GlassForm";
 
 import "./styles.css";
 
@@ -20,9 +26,14 @@ function App() {
   return (
     <Router>
       <Header />
+      {/* <GlassCard title="Modern UI" content="This is Glassmorphism in React!" />; */}
+      {/* <GlassDashboard />
+      <GlassForm /> */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/logout-success" element={<LogoutSuccess />} />
 
         {/* Admin Routes */}
         <Route
@@ -56,13 +67,14 @@ function App() {
           }
         />
         <Route
-          path="/recruiter/addjob"
-          element={
-            <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
-              <AddJob />
-            </ProtectedRoute>
-          }
-        />
+  path="/recruiter/addjob"
+  element={
+    <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter", "admin"]}>  
+      <AddJob />
+    </ProtectedRoute>
+  }
+/>
+
         <Route
           path="/recruiter/editjob/:jobId"
           element={
@@ -97,6 +109,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/jobs" element={<JobList />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }

@@ -1,3 +1,13 @@
+.browse-free {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-light);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .pricing-table table {
   width: 100%;
   border-collapse: collapse;
@@ -19,9 +29,9 @@
   background-color: #f9f9f9;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive - Applies only for screens 768px and wider */
+@media (min-width: 768px) {
   .pricing-table table {
-    font-size: 14px;
+    font-size: 16px; /* Larger font size for bigger screens */
   }
 }

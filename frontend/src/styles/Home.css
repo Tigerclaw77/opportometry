@@ -63,6 +63,7 @@ body {
   width: 100%;
   margin-bottom: 15px;
   padding: 20px;
+  text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.2);
 }
 
 .mobile-banner {
@@ -71,6 +72,7 @@ body {
   height: auto;
   object-fit: cover;
   border-radius: 8px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15); /* Light shadow */
 }
 
 .banner {
@@ -99,6 +101,7 @@ body {
   object-fit: cover;
   object-position: center;
   border-radius: 8px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15); /* Light shadow */
 }
 
 .option-button {
@@ -143,8 +146,7 @@ body {
 }
 
 .scrolling-container {
-  visibility: hidden;
-  opacity: 0;
+  display: none;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -236,9 +238,9 @@ body {
   }
 
   .scrolling-container {
-    visibility: visible;
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
+      display: block; /* Restores it for larger screens */
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;    
   }
 
   .component-wrapper {
