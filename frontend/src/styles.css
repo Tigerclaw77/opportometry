@@ -13,6 +13,16 @@ body {
   font-family: 'Arial', sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
+  display: flex;
+  flex-direction: column;  /* Ensure the page layout is in a column */
+  min-height: 100vh; /* Full height of the viewport */
+}
+
+/* App Wrapper: Make sure it's flexed vertically */
+.App {
+  display: flex;
+  flex-direction: column; /* Ensures the header, main content, and footer are stacked vertically */
+  min-height: 100vh; /* Full height of the viewport */
 }
 
 .container {
@@ -22,9 +32,13 @@ body {
   box-sizing: border-box;
 }
 
+/* Main Content Wrapper */
+.main-content {
+  flex: 1; /* Ensures content fills available space */
+}
+
 /* Navigation */
 nav {
-  /* background-color: var(--primary-color); */
   color: white;
   padding: 15px 20px;
   display: flex;
@@ -66,6 +80,10 @@ form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.highlight {
+  color: #e63946; /* Soft red */
 }
 
 input, textarea, select {
@@ -116,11 +134,170 @@ input:focus, textarea:focus, select:focus {
   margin: 0;
 }
 
-/* Footer */
-/* footer {
-  background-color: var(--primary-color);
-  color: white;
+/* Job List Styling */
+.job-list {
+  padding: 20px;
   text-align: center;
-  padding: 15px 0;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Job Cards Container */
+.job-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive design */
+  gap: 20px;
+}
+
+.job-card {
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  border-radius: 15px; /* Rounded corners */
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.job-card:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px); /* Slight lift effect */
+}
+
+.job-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.job-card p {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.modal-content p {
+  font-size: 1.1rem;
+  margin: 5px 0;
+}
+
+.modal-content button {
+  background: rgba(0, 123, 255, 0.8); /* Button with translucent background */
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-top: 20px;
+  font-size: 1rem;
+  color: white;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: rgba(0, 123, 255, 1); /* Solid color on hover */
+}
+
+/* Footer Styling */
+.footer {
+  background: #0a2540; /* Deep Navy Blue */
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-top: auto; /* Push the footer to the bottom */
+}
+
+.footer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.footer-brand h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.footer-links a:hover {
+  text-decoration: none;
+}
+
+.footer-logo {
+  text-decoration: none; /* Remove underline */
+  color: white; /* Set color to match footer */
+  font-weight: bold;
+}
+
+.footer-social {
+  display: flex;
+  gap: 15px;
+}
+
+.footer-social a {
+  color: white;
+  font-size: 24px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.footer-social a:hover {
+  transform: scale(1.1);
+  color: #4da8ff; /* Light blue on hover */
+}
+
+.footer-bottom {
+  margin-top: 10px;
   font-size: 14px;
-} */
+  opacity: 0.8;
+  cursor: default;
+}
+
+/* Responsive for larger screens */
+@media (min-width: 768px) {
+  .footer-container {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 50px;
+  }
+}

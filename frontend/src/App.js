@@ -16,100 +16,100 @@ import AddJob from "./components/Recruiter/AddJob";
 import EditJob from "./components/Recruiter/EditJob";
 import ProtectedRoute from "./ProtectedRoute";
 import Footer from "./components/Footer";
-import GlassCard from "./components/GlassCard";
-import GlassDashboard from "./components/GlassDashboard";
-import GlassForm from "./components/GlassForm";
 
 import "./styles.css";
 
 function App() {
   return (
     <Router>
-      <Header />
-      {/* <GlassCard title="Modern UI" content="This is Glassmorphism in React!" />; */}
-      {/* <GlassDashboard />
-      <GlassForm /> */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/logout-success" element={<LogoutSuccess />} />
+      <div className="App">
+        <Header />
+        
+        {/* Main Content Wrapper */}
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth/login" element={<Login />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/logout-success" element={<LogoutSuccess />} />
 
-        {/* Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <Users />
-            </ProtectedRoute>
-          }
-        />
+            {/* Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Users />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Recruiter Routes */}
-        <Route
-          path="/recruiter/register"
-          element={<Register role="recruiter" />}
-        />
-        <Route
-          path="/recruiter/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
-              <RecruiterDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-  path="/recruiter/addjob"
-  element={
-    <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter", "admin"]}>  
-      <AddJob />
-    </ProtectedRoute>
-  }
-/>
+            {/* Recruiter Routes */}
+            <Route
+              path="/recruiter/register"
+              element={<Register role="recruiter" />}
+            />
+            <Route
+              path="/recruiter/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/addjob"
+              element={
+                <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter", "admin"]}>
+                  <AddJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/editjob/:jobId"
+              element={
+                <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
+                  <EditJob />
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/recruiter/editjob/:jobId"
-          element={
-            <ProtectedRoute allowedRoles={["recruiter", "premiumrecruiter"]}>
-              <EditJob />
-            </ProtectedRoute>
-          }
-        />
+            {/* Candidate Routes */}
+            <Route
+              path="/candidate/register"
+              element={<Register role="candidate" />}
+            />
+            <Route
+              path="/candidate/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["candidate", "premiumcandidate"]}>
+                  <CandidateDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/search-jobs"
+              element={
+                <ProtectedRoute allowedRoles={["candidate", "premiumcandidate"]}>
+                  <SearchJobs />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Candidate Routes */}
-        <Route
-          path="/candidate/register"
-          element={<Register role="candidate" />}
-        />
-        <Route
-          path="/candidate/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["candidate", "premiumcandidate"]}>
-              <CandidateDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/search-jobs"
-          element={
-            <ProtectedRoute allowedRoles={["candidate", "premiumcandidate"]}>
-              <SearchJobs />
-            </ProtectedRoute>
-          }
-        />
+            {/* Public Routes */}
+            <Route path="/jobs" element={<JobList />} />
+          </Routes>
+        </div>
 
-        {/* Public Routes */}
-        <Route path="/jobs" element={<JobList />} />
-      </Routes>
-      <Footer />
+        <Footer />
+      </div>
     </Router>
   );
 }

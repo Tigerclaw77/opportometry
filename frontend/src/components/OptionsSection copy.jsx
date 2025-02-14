@@ -31,12 +31,6 @@ const OptionsSection = ({ user }) => {
             <img src="/images/candidate.jpg" alt="Candidate" />
             <h3>Register as a Candidate</h3>
           </Link>
-
-          {/* Browse Jobs for Guests */}
-          <Link to="/jobs" className="option-card">
-            <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
-            <h3>Browse Jobs</h3>
-          </Link>
         </>
       )}
 
@@ -51,26 +45,16 @@ const OptionsSection = ({ user }) => {
             <img src="/images/edit-jobs.jpg" alt="Edit Jobs" />
             <h3>Edit Jobs</h3>
           </Link>
-
-          {/* Browse Jobs for Recruiters */}
-          <Link to="/jobs" className="option-card">
-            <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
-            <h3>Browse Jobs</h3>
-          </Link>
         </>
       )}
 
-      {/* CANDIDATE OPTIONS (FREE TIER - 0) */}
+      {/* FREE CANDIDATE OPTIONS */}
       {user?.role === "candidate" && user.tier === 0 && (
         <>
           <Link to="/search/basic" className="option-card">
             <img src="/images/basic-search.jpg" alt="Basic Search" />
             <h3>Basic Search</h3>
           </Link>
-          <Link to="/update-profile" className="option-card">
-            <img src="/images/update-profile.jpg" alt="Update Profile" />
-            <h3>Update Profile</h3>
-          </Link>
           <Link to="/upgrade" className="option-card">
             <img src="/images/upgrade.jpg" alt="Upgrade" />
             <h3>Upgrade</h3>
@@ -78,16 +62,12 @@ const OptionsSection = ({ user }) => {
         </>
       )}
 
-      {/* CANDIDATE OPTIONS (LEVEL 1 - Tier 1) */}
+      {/* LEVEL 1 CANDIDATE OPTIONS */}
       {user?.role === "candidate" && user.tier === 1 && (
         <>
           <Link to="/search/advanced" className="option-card">
-            <img src="/images/advanced-search.jpg" alt="Enhanced Search" />
-            <h3>Enhanced Search</h3>
-          </Link>
-          <Link to="/update-profile" className="option-card">
-            <img src="/images/update-profile.jpg" alt="Update Profile" />
-            <h3>Update Profile</h3>
+            <img src="/images/advanced-search.jpg" alt="Advanced Search" />
+            <h3>Advanced Search</h3>
           </Link>
           <Link to="/upgrade" className="option-card">
             <img src="/images/upgrade.jpg" alt="Upgrade" />
@@ -96,23 +76,32 @@ const OptionsSection = ({ user }) => {
         </>
       )}
 
-      {/* CANDIDATE OPTIONS (LEVEL 2 - Tier 2) */}
+      {/* LEVEL 2 CANDIDATE OPTIONS */}
       {user?.role === "candidate" && user.tier === 2 && (
         <>
           <Link to="/search/advanced" className="option-card">
-            <img src="/images/advanced-search.jpg" alt="Premium Search" />
-            <h3>Premium Search</h3>
+            <img src="/images/advanced-search.jpg" alt="Advanced Search" />
+            <h3>Advanced Search</h3>
           </Link>
           <Link to="/resume/post" className="option-card">
             <img src="/images/post-resume.jpg" alt="Post Resume" />
             <h3>Post Resume</h3>
           </Link>
-          <Link to="/update-profile" className="option-card">
-            <img src="/images/update-profile.jpg" alt="Update Profile" />
-            <h3>Update Profile</h3>
-          </Link>
         </>
       )}
+
+      {/* BROWSE JOBS - ALWAYS LAST */}
+      <button
+        className="option-button"
+        onClick={() => (window.location.href = "/jobs")}
+      >
+        Browse Jobs
+      </button>
+      
+      <Link to="/jobs" className="option-card">
+        <img src="/images/browse-jobs.jpg" alt="Browse Jobs" />
+        <h3>Browse Jobs</h3>
+      </Link>
     </div>
   );
 };

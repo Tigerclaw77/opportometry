@@ -1,7 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom"; // Import Link from React Router
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebook, faXTwitter, faInstagram } from "@fortawesome/free-brands-svg-icons";
-import "../styles/Footer.css";
+import "../styles.css";
 
 const Footer = () => {
   return (
@@ -9,7 +10,11 @@ const Footer = () => {
       <div className="footer-container">
         {/* Left Section - Brand Name */}
         <div className="footer-brand">
-          <h2>jobs.vision</h2>
+        <h2>
+            <Link to="/" className="footer-logo"> {/* Link to home */}
+              jobs<span className="highlight">.</span>vision
+            </Link>
+          </h2>
         </div>
 
         {/* Middle Section - Navigation Links */}
