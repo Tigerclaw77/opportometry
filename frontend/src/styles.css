@@ -1,24 +1,23 @@
 /* Base Styles */
 :root {
-  --primary-color: #005A78; /* Deep Teal */
-  --secondary-color: #0085B2; /* Brighter Blue */
-  --background-color: #F3F7F9;
+  --primary-color: #005a78; /* Deep Teal */
+  --secondary-color: #0085b2; /* Brighter Blue */
+  --background-color: #f3f7f9;
   --text-color: #222; /* Darker Text */
-  --button-hover: #E63946; /* Red Hover Effect */
+  --button-hover: #e63946; /* Red Hover Effect */
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
   display: flex;
-  flex-direction: column;  /* Ensure the page layout is in a column */
-  min-height: 100vh; /* Full height of the viewport */
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* App Wrapper: Make sure it's flexed vertically */
 .App {
   display: flex;
   flex-direction: column; /* Ensures the header, main content, and footer are stacked vertically */
@@ -54,7 +53,7 @@ nav a {
 }
 
 nav a:hover {
-  color: #B0DAF1; /* Light Blue for Subtle Contrast */
+  color: #b0daf1; /* Light Blue for Subtle Contrast */
   transition: color 0.3s ease;
 }
 
@@ -86,7 +85,9 @@ form {
   color: #e63946; /* Soft red */
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   width: 100%;
   font-size: 16px;
   padding: 12px;
@@ -98,7 +99,9 @@ textarea {
   resize: none;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--secondary-color);
 }
@@ -148,12 +151,16 @@ h2 {
 /* Job Cards Container */
 .job-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive design */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(280px, 1fr)
+  ); /* Responsive design */
   gap: 20px;
 }
 
 .job-card {
   background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px); /* Frosted glass effect */
   border-radius: 15px; /* Rounded corners */
   padding: 20px;
@@ -192,8 +199,9 @@ h2 {
 }
 
 .modal-content {
-  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 20px;
   width: 90%;

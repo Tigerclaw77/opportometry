@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import "../styles/Home.css";
 import OptionsSection from "./OptionsSection";
 import PricingTable from "./PricingTable";
@@ -16,12 +16,12 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+    const storedUser =
+      localStorage.getItem("user") || sessionStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
-  
 
   // Function to manually set a user role for testing
   const handleUserChange = (role, tier = 0) => {
@@ -44,10 +44,9 @@ const Home = () => {
         className="mobile-banner"
       />
 
-{/* <GlassMorphism blur={15} color="rgba(255, 255, 255, 0.15)" opacity={0.3} borderRadius={16}>
+      {/* <GlassMorphism blur={15} color="rgba(255, 255, 255, 0.15)" opacity={0.3} borderRadius={16}>
   <h3 style={{ color: "white" }}>Glassmorphism Example</h3>
 </GlassMorphism> */}
-
 
       {/* Scrolling Carousel (Hidden on Small Screens) */}
       <div className="scrolling-container">
@@ -93,7 +92,7 @@ const Home = () => {
 
       {/* 🔹 Pass user data to OptionsSection */}
       <div className="component-wrapper">
-      {/* <GlassMorphism blur={15} color="rgba(255, 255, 255, 0.15)" opacity={0.3} borderRadius={16}> */}
+        {/* <GlassMorphism blur={15} color="rgba(255, 255, 255, 0.15)" opacity={0.3} borderRadius={16}> */}
         <OptionsSection user={user} />
         {/* </GlassMorphism> */}
         {/* <h3 className="browse-free">Browse and apply for free!</h3> */}
