@@ -1,0 +1,48 @@
+.profile-container {
+    position: relative;
+    padding: 20px;
+    /* background: url('/images/your-photo.jpg') no-repeat center center fixed; */
+    background-size: cover;
+    height: 100vh; /* Full height */
+    color: #fff;
+  }
+  
+  .profile-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4); /* Semi-transparent dark overlay */
+    z-index: -1;
+  }
+  
+  .profile-form {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px); /* Increase blur if needed */
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    color: #fff;
+  }
+  
+  h2, h3 {
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Adds shadow to make text pop */
+  }
+  
+  button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  button:hover {
+    background-color: #2980b9;
+  }
+  

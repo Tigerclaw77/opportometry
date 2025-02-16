@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import Home from "./components/Home";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import RecruiterDashboard from "./components/Recruiter/RecruiterDashboard";
+import CandidateProfile from "./components/Candidate/CandidateProfile";
 import CandidateDashboard from "./components/Candidate/CandidateDashboard";
 import SearchJobs from "./components/Candidate/SearchJobs";
 import JobList from "./components/JobList";
@@ -86,6 +87,9 @@ function App() {
               path="/candidate/register"
               element={<Register role="candidate" />}
             />
+
+<Route path="/candidateprofile" element={<CandidateProfile />} />
+
             <Route
               path="/candidate/dashboard"
               element={
