@@ -1,49 +1,165 @@
+/* General container styles */
 .profile-container {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  /* background: url('/images/your-photo.jpg') no-repeat center center fixed; */
-  background-size: cover;
-  height: 100vh; /* Full height */
-  color: #fff;
 }
 
-/* .profile-container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: -1;
-  } */
-
+/* Mobile-first: Form is full width */
 .profile-form {
+  width: 100%;
+  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: blur(10px); /* Safari/iOS support */
-  backdrop-filter: blur(10px); /* Main blur effect */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border-radius: 12px;
-  padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  color: #fff;
+  color: #333;
 }
 
-h2,
-h3 {
-  color: #fff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Adds shadow to make text pop */
+/* Name fields: Stack by default for mobile */
+.name-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-button {
-  background-color: #3498db;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
+/* Labels above inputs for better readability */
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group input {
+  font-family: inherit;
+  font-size: 16px;
+  color: #222;
+  letter-spacing: 0.02em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Title dropdown should be compact */
+.title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: auto;
+}
+
+/* .title-dropdown {
+  width: 60px;
+  text-align: center;
+  padding: 4px;
+} */
+
+/* Ensure Title dropdown matches input font and kerning */
+.title-dropdown {
+  font-family: inherit; /* Inherits font from parent */
+  font-size: 16px; /* Match text size */
+  letter-spacing: 0.02em; /* Forces uniform kerning */
+  text-rendering: optimizeLegibility; /* Ensures better font rendering */
+  -webkit-font-smoothing: antialiased; /* Fixes differences on macOS */
+  -moz-osx-font-smoothing: grayscale; /* Fixes kerning on Firefox/macOS */
+  width: 60px;
+  text-align: center;
+  padding: 4px; /* Matches input padding */
+  margin-bottom: 8px;
+  height: 36px; /* Matches input height */
+  border: 1px solid #ccc; /* Ensure visual alignment */
   border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  appearance: none; /* Removes default browser styling */
 }
 
-button:hover {
-  background-color: #2980b9;
+/* Individual checkbox group */
+.checkbox-group {
+  display: flex;
+  align-items: center; /* Aligns checkbox and label vertically */
+  gap: 5px; /* Space between checkbox and label */
+}
+
+ /* Fine-tune checkbox vertical alignment */
+ .checkbox-group input[type="checkbox"] {
+  position: relative;
+  top: -1px; /* Adjust this value as needed */
+}
+
+/* Adjust "Other" role input */
+.other-role {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  top: 3px;
+}
+
+/* Ensure "Other" input doesn't stretch too wide */
+.other-role-input {
+  width: 150px; /* Adjust this value */
+  max-width: 150px;
+  margin-top: -10px;
+  flex-grow: 0; /* Prevents stretching in flex containers */
+}
+
+/* Larger screens (Desktop) */
+@media (min-width: 768px) {
+  .profile-form {
+    max-width: 600px;
+    padding: 30px;
+  }
+
+  /* Reduce gap between title and first name */
+  .name-fields {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr; /* Title takes minimal space */
+    gap: 10px;
+    align-items: center;
+  }
+
+  .name-fields label {
+    padding-left: 3px; /* Moves labels 5px to the right */
+  }
+
+/* Title dropdown should match input height */
+.title-dropdown {
+  font-family: inherit; /* Inherits the same font as inputs */
+  font-size: 16px; /* Match input text size */
+  letter-spacing: normal; /* Prevents compressed or expanded text */
+  width: 60px;
+  text-align: center;
+  padding: 8px; /* Increased padding to match input height */
+  height: 36px; /* Set fixed height to match text inputs */
+  border: 1px solid #ccc; /* Ensure it visually aligns */
+  border-radius: 6px;
+  appearance: none; /* Removes default browser styling */
+  margin-bottom: 0;
+}
+
+/* Ensure title group aligns with inputs */
+.title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: -14px;
+  width: auto;
+  justify-content: center; /* Align with text input */
+}
+
+/* Ensure all input fields have consistent height */
+.input-group input {
+  font-family: inherit; /* Ensure inputs inherit correct font */
+  font-size: 16px; /* Match Title dropdown text size */
+  letter-spacing: normal; /* Standard character spacing */
+  height: 36px; /* Ensure same height for all inputs */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+
+  .card {
+    background: rgba(255, 255, 255, 0.2);
+  }
 }

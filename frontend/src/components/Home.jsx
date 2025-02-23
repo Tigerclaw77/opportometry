@@ -75,7 +75,7 @@ const Home = () => {
       </p>
 
       {/* 🔹 User Role Selection for Testing */}
-      <div className="test-controls">
+      {/* <div className="test-controls">
         <p>🔧 Change User Role for Testing:</p>
         <button onClick={() => handleUserChange(null)}>Logout (Guest)</button>
         <button onClick={() => handleUserChange("recruiter")}>Recruiter</button>
@@ -88,7 +88,7 @@ const Home = () => {
         <button onClick={() => handleUserChange("candidate", 2)}>
           Candidate (Level 2)
         </button>
-      </div>
+      </div> */}
 
       {/* 🔹 Pass user data to OptionsSection */}
       <div className="component-wrapper">

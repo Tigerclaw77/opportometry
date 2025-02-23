@@ -33,7 +33,9 @@ body {
 
 /* Main Content Wrapper */
 .main-content {
-  flex: 1; /* Ensures content fills available space */
+  flex: 1; /* Ensures content expands and pushes footer down */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Navigation */

@@ -1,9 +1,10 @@
-// scripts/seedJobs.js
+require("dotenv").config();
+console.log("🔹 MONGO_URI from .env:", process.env.MONGO_URI);
 
-const mongoose = require('mongoose');
-const Job = require('../models/Job');  // Import the Job model
+const mongoose = require("mongoose");
+const Job = require("../models/Job"); // Import Job model
 
-// Dummy job data to insert into the database
+// ✅ Dummy job data to insert into the database
 const dummyJobs = [
   {
     title: "Optometrist",
@@ -13,9 +14,9 @@ const dummyJobs = [
     hours: "full-time",
     role: "Optometrist",
     practiceMode: "employed",
-    createdBy: null,  // You can leave this as null or use a dummy user ID if needed
+    createdBy: null,
     createdAt: new Date(),
-    savedBy: [], // Empty array to simulate no saved users for now
+    savedBy: [],
   },
   {
     title: "Optometrist or Ophthalmologist",
@@ -25,7 +26,7 @@ const dummyJobs = [
     hours: "part-time",
     role: "Optometrist",
     practiceMode: "contract",
-    createdBy: null,  // Leave as null for now
+    createdBy: null,
     createdAt: new Date(),
     savedBy: [],
   },
@@ -37,25 +38,37 @@ const dummyJobs = [
     hours: "per diem",
     role: "Optometrist",
     practiceMode: "associate",
-    createdBy: null,  // Leave as null or use a valid user ID
+    createdBy: null,
     createdAt: new Date(),
     savedBy: [],
   },
 ];
 
-// Seed the dummy data into the database
 const seedJobs = async () => {
   try {
-    // Connect to MongoDB first
-    await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    // ✅ Connect to MongoDB
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Connected to MongoDB");
 
-    await Job.insertMany(dummyJobs);  // Insert the jobs into the database
-    console.log("Dummy jobs have been seeded!");
-    mongoose.connection.close();  // Close the connection after seeding
+    // ✅ Check if jobs already exist
+    const existingJobs = await Job.countDocuments();
+    if (existingJobs > 0) {
+      console.log("⚠️ Jobs already exist. Skipping seeding.");
+      mongoose.connection.close();
+      return;
+    }
+
+    // ✅ Use insertMany to insert jobs in bulk
+    await Job.insertMany(dummyJobs);
+    console.log("✅ Jobs inserted successfully!");
+
+    // ✅ Close connection
+    mongoose.connection.close();
   } catch (error) {
-    console.error("Error seeding jobs:", error);
+    console.error("❌ Error seeding jobs:", error);
+    mongoose.connection.close();
   }
 };
 
-// Call the function to seed data
+// ✅ Run the function to seed jobs
 seedJobs();

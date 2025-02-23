@@ -249,9 +249,9 @@ const Header = () => {
             <Link to="/notifications" className="icon"><FiBell /></Link>
 
             {/* Add Dev Mode toggle button */}
-            <button onClick={toggleDevMode} className="dev-mode-toggle">
+            {/* <button onClick={toggleDevMode} className="dev-mode-toggle">
               Dev Mode: {devMode ? "ON" : "OFF"}
-            </button>
+            </button> */}
 
             {user ? (
               <div className="account-container" ref={dropdownRef}>

@@ -5,31 +5,27 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected successfully!");
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`✅ Using Database: ${conn.connection.db.databaseName}`);
   } catch (error) {
-    console.error("Initial MongoDB connection failed:", error);
-
-    // Retry mechanism
+    console.error("❌ Initial MongoDB connection failed:", error);
     setTimeout(connectDB, 5000); // Retry connection after 5 seconds
   }
 };
 
-// Event listeners for mongoose connection
+// ✅ Event listeners for mongoose connection
 mongoose.connection.on("connected", () => {
-  console.log("Mongoose connected to the database.");
+  console.log("✅ Mongoose connected to the database.");
 });
 
 mongoose.connection.on("error", (err) => {
-  console.error("Mongoose connection error:", err);
+  console.error("❌ Mongoose connection error:", err);
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.warn("Mongoose connection lost. Retrying...");
-  connectDB(); // Automatically retry if disconnected
+  console.warn("⚠️ Mongoose connection lost. Retrying...");
+  connectDB();
 });
 
 module.exports = connectDB;
