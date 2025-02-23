@@ -1,190 +1,240 @@
 /* Ensure full box-sizing to prevent unwanted margin/padding conflicts */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-  }
-  
-  /* Main job list container */
-  .job-list {
-    padding: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center the job cards container */
-    gap: 20px; /* Add spacing between the title and the job cards */
-    width: 100%;
-  }
-  
-  h2 {
-    font-size: 2rem;
-    color: aliceblue;
-    margin-bottom: 20px;
-    width: 100%; /* Ensure the title stretches across the available width */
-  }
-  
-  /* Job cards container (grid) */
-  .job-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Make the grid responsive */
-    gap: 20px;
-    width: 100%; /* Ensure it uses full width */
-    padding: 0; /* Remove any default padding */
-    margin: 0; /* Reset any margin */
-  }
-  
-  /* Job card styling */
-  .job-card {
-    background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
-    backdrop-filter: blur(10px); /* Frosted glass effect */
-    border-radius: 15px; /* Rounded corners */
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: auto;
-    width: 100%; /* Allow the card to take up full available width */
-    position: relative; /* Ensure elements inside don't overflow */
-  }
-  
-  /* Ensure the background image is set correctly */
-  .job-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('https://source.unsplash.com/random/800x600') no-repeat center center/cover;
-    opacity: 0.3;
-    border-radius: 15px;
-    z-index: -1; /* Behind the content */
-  }
-  
-  /* Text inside the job card */
-  .job-card h3 {
-    color: aliceblue;
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-  }
-  
-  .job-card p {
-    font-size: 1rem;
-    color: #ccc;
-  }
-  
-  .job-card button {
-    background: rgba(0, 123, 255, 0.7); /* Translucent blue background for buttons */
-    border: none;
-    padding: 10px 20px;
-    color: white;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    margin-top: 10px;
-  }
-  
-  .job-card button:hover {
-    background: rgba(0, 123, 255, 1); /* Solid blue on hover */
-  }
-  
-  /* Dark Mode Adjustments */
-  body.dark-mode .job-card {
-    background: rgba(30, 30, 30, 0.8); /* Darker background */
-    color: var(--text-color-dark);
-  }
-  
-  body.dark-mode .job-card::before {
-    opacity: 0.5; /* Darker opacity for dark mode */
-  }
-  
-  body.dark-mode .job-card button {
-    background: rgba(0, 123, 255, 0.9); /* Darker button */
-  }
-  
-  body.dark-mode .job-card button:hover {
-    background: rgba(0, 123, 255, 1); /* Solid button color on hover */
-  }
-  
-  /* Modal Overlay */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Main job list container */
+.job-list {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the job cards container */
+  gap: 20px; /* Add spacing between the title and the job cards */
+  width: 100%;
+}
+
+h2 {
+  font-size: 2rem;
+  color: aliceblue;
+  margin-bottom: 20px;
+  width: 100%; /* Ensure the title stretches across the available width */
+}
+
+/* Job cards container (grid) */
+.job-cards {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(280px, 1fr)
+  ); /* Make the grid responsive */
+  gap: 20px;
+  width: 100%; /* Ensure it uses full width */
+  padding: 0; /* Remove any default padding */
+  margin: 0; /* Reset any margin */
+}
+
+/* Job card styling */
+.job-card {
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  border-radius: 15px; /* Rounded corners */
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: auto;
+  width: 100%; /* Allow the card to take up full available width */
+  position: relative; /* Ensure elements inside don't overflow */
+}
+
+/* Ensure the background image is set correctly */
+.job-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("https://source.unsplash.com/random/800x600") no-repeat center
+    center/cover;
+  opacity: 0.3;
+  border-radius: 15px;
+  z-index: -1; /* Behind the content */
+}
+
+/* Text inside the job card */
+.job-card h3 {
+  color: aliceblue;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.job-card p {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.job-card button {
+  background: rgba(
+    0,
+    123,
+    255,
+    0.7
+  ); /* Translucent blue background for buttons */
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 10px;
+}
+
+.job-card button:hover {
+  background: rgba(0, 123, 255, 1); /* Solid blue on hover */
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .job-card {
+  background: rgba(30, 30, 30, 0.8); /* Darker background */
+  color: var(--text-color-dark);
+}
+
+body.dark-mode .job-card::before {
+  opacity: 0.5; /* Darker opacity for dark mode */
+}
+
+body.dark-mode .job-card button {
+  background: rgba(0, 123, 255, 0.9); /* Darker button */
+}
+
+body.dark-mode .job-card button:hover {
+  background: rgba(0, 123, 255, 1); /* Solid button color on hover */
+}
+
+/* Modal Overlay */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0; /* Hidden by default */
-    visibility: hidden; /* Ensure it's non-interactive */
-    transition: opacity 0.5s ease, visibility 0s 0.5s; /* Smooth fade-in */
-  }
-  
-  /* When the modal is active, fade it in */
-  .modal-overlay.active {
-    opacity: 1; /* Make it visible */
-    visibility: visible; /* Make it interactive */
-    transition: opacity 0.5s ease, visibility 0s; /* Remove delay */
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0; /* Hidden by default */
+  visibility: hidden; /* Ensure it's non-interactive */
+  transition: opacity 0.5s ease, visibility 0s 0.5s; /* Smooth fade-in */
+}
+
+/* When the modal is active, fade it in */
+.modal-overlay.active {
+  opacity: 1; /* Make it visible */
+  visibility: visible; /* Make it interactive */
+  transition: opacity 0.5s ease, visibility 0s; /* Remove delay */
+}
+
 /* Modal Content */
 .modal-content {
-    background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
-    backdrop-filter: blur(10px); /* Frosted glass effect */
-    border-radius: 20px;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
-    color: #fff;
-    text-align: left;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    opacity: 0; /* Start hidden */
-    transform: translateY(-30px); /* Slide in from top */
-    transition: opacity 0.5s ease, transform 0.5s ease; /* Animate both */
-  }
-  
-  .modal-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
-  }
-  
-  .modal-content p {
-    font-size: 1.1rem;
-    margin: 5px 0;
-  }
-  
-  .modal-content button {
-    background: rgba(0, 123, 255, 0.8); /* Button with translucent background */
-    border-radius: 8px;
-    padding: 10px 20px;
-    margin-top: 20px;
-    font-size: 1rem;
-    color: white;
-    transition: background 0.3s ease;
-  }
-  
-  .modal-content button:hover {
-    background: rgba(0, 123, 255, 1); /* Solid color on hover */
-  }
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  opacity: 0; /* Start hidden */
+  transform: translateY(-30px); /* Slide in from top */
+  transition: opacity 0.5s ease, transform 0.5s ease; /* Animate both */
+}
 
-  /* When modal content is active, fade and slide it in */
+.modal-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.modal-content p {
+  font-size: 1.1rem;
+  margin: 5px 0;
+}
+
+.modal-content button {
+  background: rgba(0, 123, 255, 0.8); /* Button with translucent background */
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-top: 20px;
+  font-size: 1rem;
+  color: white;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: rgba(0, 123, 255, 1); /* Solid color on hover */
+}
+
+/* When modal content is active, fade and slide it in */
 .modal-overlay.active .modal-content {
-    opacity: 1; /* Fade in */
-    transform: translateY(0); /* Slide into place */
-  }
-  
+  opacity: 1; /* Fade in */
+  transform: translateY(0); /* Slide into place */
+}
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  visibility: hidden;
+  background-color: black;
+  color: white;
+  text-align: left;
+  padding: 5px 8px;
+  border-radius: 4px;
+  position: absolute;
+  left: 50%;
+  bottom: 0%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Default left-aligned tooltips */
+.left-align-tooltip {
+  left: 0;
+  text-align: left;
+}
+
+/* Applied tooltips moved slightly right for better alignment */
+.applied-tooltip {
+  left: 110px; /* ✅ Adjust this value as needed */
+  text-align: left;
+  width: max-content;
+}
+
+.tooltip-wrapper:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}

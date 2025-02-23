@@ -311,3 +311,36 @@ h2 {
     padding: 0 50px;
   }
 }
+
+.job-icon-container {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.job-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.2;
+  cursor: pointer;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.job-icon.active {
+  opacity: 1;
+}
+
+.favorite {
+  color: #facc15;
+}
+
+.watchlist {
+  color: #3b82f6;
+}
+
+.applied {
+  color: #22c55e;
+}
