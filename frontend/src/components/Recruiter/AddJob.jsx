@@ -1,388 +1,224 @@
-// import React, { useState } from "react";
-// import axios from "axios";
-// import { v4 as uuidv4 } from "uuid";
-
-// const AddJob = ({ onSuccess }) => {
-//   const [formData, setFormData] = useState({
-//     title: "",
-//     description: "",
-//     company: "",
-//     location: "",
-//     salary: "",
-//     jobType: [],
-//     position: "",
-//   });
-
-//   const [loading, setLoading] = useState(false);
-
-//   const handleChange = (e) => {
-//     const { name, value, type, checked } = e.target;
-
-//     if (type === "checkbox") {
-//       setFormData((prev) => ({
-//         ...prev,
-//         [name]: checked
-//           ? [...prev[name], value]
-//           : prev[name].filter((item) => item !== value),
-//       }));
-//     } else {
-//       setFormData({ ...formData, [name]: value });
-//     }
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-
-//     try {
-//       const token = localStorage.getItem("token");
-//       const response = await axios.post(
-//         "http://localhost:5000/api/jobs",
-//         { ...formData }, // Ensure we're sending only required fields
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       alert("Job added successfully!");
-//       onSuccess();
-//       setFormData({
-//         title: "",
-//         description: "",
-//         company: "",
-//         location: "",
-//         salary: "",
-//         jobType: [],
-//         position: "",
-//       });
-//     } catch (error) {
-//       alert(error.response?.data?.message || "Failed to submit job");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} style={styles.form}>
-//       <h2>Add a Job</h2>
-//       <input name="title" placeholder="Job Title" value={formData.title} onChange={handleChange} required />
-//       <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} required />
-//       <input name="company" placeholder="Company" value={formData.company} onChange={handleChange} required />
-//       <input name="location" placeholder="Location" value={formData.location} onChange={handleChange} required />
-//       <input name="salary" placeholder="Salary" value={formData.salary} onChange={handleChange} required />
-
-//       {/* Job Type (Checkboxes) */}
-//       <fieldset>
-//         <legend>Job Type</legend>
-//         <label>
-//           <input type="checkbox" name="jobType" value="Full-time" checked={formData.jobType.includes("Full-time")} onChange={handleChange} /> Full-time
-//         </label>
-//         <label>
-//           <input type="checkbox" name="jobType" value="Part-time" checked={formData.jobType.includes("Part-time")} onChange={handleChange} /> Part-time
-//         </label>
-//       </fieldset>
-
-//       {/* Position Type (Radio Buttons) */}
-//       <fieldset>
-//         <legend>Position Type</legend>
-//         <label>
-//           <input type="radio" name="position" value="Leaseholder" checked={formData.position === "Leaseholder"} onChange={handleChange} /> Leaseholder
-//         </label>
-//         <label>
-//           <input type="radio" name="position" value="Associate" checked={formData.position === "Associate"} onChange={handleChange} /> Associate
-//         </label>
-//         <label>
-//           <input type="radio" name="position" value="Employee" checked={formData.position === "Employee"} onChange={handleChange} /> Employee
-//         </label>
-//       </fieldset>
-
-//       <button type="submit" disabled={loading} style={styles.submitButton}>
-//         {loading ? "Posting..." : "Post Job"}
-//       </button>
-//     </form>
-//   );
-// };
-
-// // ✅ Styles for Better UI
-// const styles = {
-//   form: {
-//     display: "flex",
-//     flexDirection: "column",
-//     gap: "10px",
-//     width: "300px",
-//     margin: "20px auto",
-//   },
-//   submitButton: {
-//     backgroundColor: "#005a78",
-//     color: "white",
-//     border: "none",
-//     padding: "10px",
-//     cursor: "pointer",
-//     borderRadius: "5px",
-//     fontSize: "16px",
-//   },
-// };
-
-// export default AddJob;
-
-// import React, { useState } from "react";
-// import axios from "axios";
-
-// const AddJob = ({ onSuccess }) => {
-//   const [formData, setFormData] = useState({
-//     title: "",
-//     description: "",
-//     company: "",
-//     location: "",
-//     salary: "",
-//     jobType: [],
-//     position: "",
-//   });
-
-//   const [loading, setLoading] = useState(false);
-
-//   const handleChange = (e) => {
-//     const { name, value, type, checked } = e.target;
-
-//     if (type === "checkbox") {
-//       setFormData((prev) => ({
-//         ...prev,
-//         [name]: checked
-//           ? [...prev[name], value]
-//           : prev[name].filter((item) => item !== value),
-//       }));
-//     } else {
-//       setFormData({ ...formData, [name]: value });
-//     }
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-  
-//     try {
-//       const token = localStorage.getItem("token");
-//       console.log("🔹 Token being sent:", token); // Debugging
-  
-//       // ✅ Prevent sending "Authorization: Bearer null"
-//       if (!token) {
-//         alert("You must be logged in to post a job.");
-//         setLoading(false);
-//         return;
-//       }
-  
-//       const response = await axios.post(
-//         "http://localhost:5000/api/jobs",
-//         { ...formData },
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-  
-//       alert("Job added successfully!");
-//       onSuccess();
-//       setFormData({
-//         title: "",
-//         description: "",
-//         company: "",
-//         location: "",
-//         salary: "",
-//         jobType: [],
-//         position: "",
-//       });
-//     } catch (error) {
-//       console.error("❌ Job submission error:", error);
-//       alert(error.response?.data?.message || "Failed to submit job.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} style={styles.form}>
-//       <h2>Add a Job</h2>
-//       <input name="title" placeholder="Job Title" value={formData.title} onChange={handleChange} required />
-//       <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} required />
-//       <input name="company" placeholder="Company" value={formData.company} onChange={handleChange} required />
-//       <input name="location" placeholder="Location" value={formData.location} onChange={handleChange} required />
-//       <input name="salary" placeholder="Salary" value={formData.salary} onChange={handleChange} required />
-
-//       {/* Job Type (Checkboxes) */}
-//       <fieldset>
-//         <legend>Job Type</legend>
-//         <label>
-//           <input type="checkbox" name="jobType" value="Full-time" checked={formData.jobType.includes("Full-time")} onChange={handleChange} /> Full-time
-//         </label>
-//         <label>
-//           <input type="checkbox" name="jobType" value="Part-time" checked={formData.jobType.includes("Part-time")} onChange={handleChange} /> Part-time
-//         </label>
-//       </fieldset>
-
-//       {/* Position Type (Radio Buttons) */}
-//       <fieldset>
-//         <legend>Position Type</legend>
-//         <label>
-//           <input type="radio" name="position" value="Leaseholder" checked={formData.position === "Leaseholder"} onChange={handleChange} /> Leaseholder
-//         </label>
-//         <label>
-//           <input type="radio" name="position" value="Associate" checked={formData.position === "Associate"} onChange={handleChange} /> Associate
-//         </label>
-//         <label>
-//           <input type="radio" name="position" value="Employee" checked={formData.position === "Employee"} onChange={handleChange} /> Employee
-//         </label>
-//       </fieldset>
-
-//       <button type="submit" disabled={loading} style={styles.submitButton}>
-//         {loading ? "Posting..." : "Post Job"}
-//       </button>
-//     </form>
-//   );
-// };
-
-// // ✅ Styles for Better UI
-// const styles = {
-//   form: {
-//     display: "flex",
-//     flexDirection: "column",
-//     gap: "10px",
-//     width: "300px",
-//     margin: "20px auto",
-//   },
-//   submitButton: {
-//     backgroundColor: "#005a78",
-//     color: "white",
-//     border: "none",
-//     padding: "10px",
-//     cursor: "pointer",
-//     borderRadius: "5px",
-//     fontSize: "16px",
-//   },
-// };
-
-// export default AddJob;
-
 import React, { useState } from "react";
-import axios from "axios";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import {
+  Container,
+  Paper,
+  Typography,
+  Grid2,
+  FormControlLabel,
+  Checkbox,
+  Button,
+  Box,
+} from "@mui/material";
+import GlassTextField from "../ui/GlassTextField";
+import "../../styles/Forms.css"; // ✅ Ensure global styles are applied
 
-const AddJob = ({ onSuccess }) => {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    company: "",
-    location: "",
-    salary: "",
-    jobType: [],
-    position: "",
+// ✅ Validation Schema
+const schema = yup.object().shape({
+  jobTitle: yup.string().required("Job title is required"),
+  description: yup.string().required("Job description is required"),
+  salary: yup.string().matches(/^[0-9,.\-\sA-Za-z]+$/, "Invalid salary format").required("Salary is required"),
+  jobStatus: yup.array().min(1, "Select at least one job status"),
+  jobType: yup.array().min(1, "Select at least one job type"),
+  location: yup.string().required("Location is required unless remote"),
+  templateName: yup.string(),
+});
+
+const AddJob = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      jobTitle: "",
+      description: "",
+      salary: "",
+      jobStatus: [],
+      jobType: [],
+      remote: false,
+      inOffice: false,
+      location: "",
+      saveTemplate: false,
+      templateName: "",
+    },
   });
 
-  const [loading, setLoading] = useState(false);
+  const [saveTemplate, setSaveTemplate] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    if (type === "checkbox") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: checked
-          ? [...prev[name], value]
-          : prev[name].filter((item) => item !== value),
-      }));
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem("token");
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}; // ✅ Send token only if available
-
-      console.log("🔹 Sending job posting request:", formData); // ✅ Debugging log
-
-      const response = await axios.post(
-        "http://localhost:5000/api/jobs",
-        { ...formData },
-        { headers }
-      );
-
-      console.log("✅ Job posted successfully:", response.data); // ✅ Debugging log
-      alert("Job added successfully!");
-      onSuccess();
-      setFormData({
-        title: "",
-        description: "",
-        company: "",
-        location: "",
-        salary: "",
-        jobType: [],
-        position: "",
-      });
-    } catch (error) {
-      console.error("❌ Job submission error:", error.response?.data || error.message);
-      alert(error.response?.data?.message || "Failed to submit job.");
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = (data) => {
+    console.log("Job Data Submitted:", {
+      ...data,
+      saveTemplate,
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <h2>Add a Job</h2>
-      <input name="title" placeholder="Job Title" value={formData.title} onChange={handleChange} required />
-      <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} required />
-      <input name="company" placeholder="Company" value={formData.company} onChange={handleChange} required />
-      <input name="location" placeholder="Location" value={formData.location} onChange={handleChange} required />
-      <input name="salary" placeholder="Salary" value={formData.salary} onChange={handleChange} required />
+    <Container maxWidth="md">
+      <Paper elevation={5} className="glass-form">
+        <Typography variant="h4" align="center" gutterBottom>
+          Post a Job
+        </Typography>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Grid2 container spacing={3} direction="column"> {/* ✅ Force full-width stacking */}
 
-      {/* Job Type (Checkboxes) */}
-      <fieldset>
-        <legend>Job Type</legend>
-        <label>
-          <input type="checkbox" name="jobType" value="Full-time" checked={formData.jobType.includes("Full-time")} onChange={handleChange} /> Full-time
-        </label>
-        <label>
-          <input type="checkbox" name="jobType" value="Part-time" checked={formData.jobType.includes("Part-time")} onChange={handleChange} /> Part-time
-        </label>
-      </fieldset>
+            {/* Job Title */}
+            <Grid2 item xs={12}>
+              <GlassTextField 
+                label="Job Title" 
+                fullWidth 
+                {...register("jobTitle")} 
+                error={!!errors.jobTitle} 
+                helperText={errors.jobTitle?.message} 
+                className="glass-input half-width single-line" 
+                variant="outlined" 
+              />
+            </Grid2>
 
-      {/* Position Type (Radio Buttons) */}
-      <fieldset>
-        <legend>Position Type</legend>
-        <label>
-          <input type="radio" name="position" value="Leaseholder" checked={formData.position === "Leaseholder"} onChange={handleChange} /> Leaseholder
-        </label>
-        <label>
-          <input type="radio" name="position" value="Associate" checked={formData.position === "Associate"} onChange={handleChange} /> Associate
-        </label>
-        <label>
-          <input type="radio" name="position" value="Employee" checked={formData.position === "Employee"} onChange={handleChange} /> Employee
-        </label>
-      </fieldset>
+            {/* Salary */}
+            <Grid2 item xs={12}>
+              <GlassTextField 
+                label="Salary" 
+                fullWidth 
+                {...register("salary")} 
+                error={!!errors.salary} 
+                helperText={errors.salary?.message} 
+                className="glass-input half-width single-line" 
+                variant="outlined" 
+              />
+            </Grid2>
 
-      <button type="submit" disabled={loading} style={styles.submitButton}>
-        {loading ? "Posting..." : "Post Job"}
-      </button>
-    </form>
+            {/* Location */}
+            <Grid2 item xs={12}>
+              <GlassTextField 
+                label="Location" 
+                placeholder="City, State or ZIP code"
+                fullWidth 
+                {...register("location")} 
+                error={!!errors.location} 
+                helperText={errors.location?.message} 
+                className="glass-input half-width single-line" 
+                variant="outlined" 
+              />
+            </Grid2>
+
+            {/* ✅ Job Description (Directly Below Location, Full Width) */}
+            <Grid2 item xs={12}>
+              <GlassTextField 
+                label="Job Description" 
+                multiline 
+                rows={4} 
+                fullWidth 
+                {...register("description")} 
+                error={!!errors.description} 
+                helperText={errors.description?.message} 
+                className="glass-input textarea" 
+                variant="outlined" 
+              />
+            </Grid2>
+
+            {/* ✅ Job Position Checkboxes (New Section) */}
+            <Grid2 item xs={12}>
+              <Typography variant="h6">Job Position</Typography>
+              <Box className="checkbox-group">
+                {[
+                  "Optometrist", "Ophthalmologist", "Optician",
+                  "Office Manager", "Optometric Tech", "Ophthalmic Tech", "Surgical Tech", "Scribe",
+                  "Front Desk/Reception", "Insurance/Billing"
+                ].map((role) => (
+                  <FormControlLabel 
+                    key={role} 
+                    control={<Checkbox {...register("jobRoles")} value={role} />} 
+                    label={role} 
+                  />
+                ))}
+              </Box>
+            </Grid2>
+
+            {/* ✅ Job Status Checkboxes */}
+            <Grid2 item xs={12}>
+              <Typography variant="h6">Job Status</Typography>
+              <Box className="checkbox-group">
+                {["Full-time", "Part-time", "Per Diem / Contract"].map((status) => (
+                  <FormControlLabel 
+                    key={status} 
+                    control={<Checkbox {...register("jobStatus")} value={status} />} 
+                    label={status} 
+                  />
+                ))}
+              </Box>
+            </Grid2>
+
+            {/* ✅ Job Type Checkboxes */}
+            <Grid2 item xs={12}>
+              <Typography variant="h6">Job Type</Typography>
+              <Box className="checkbox-group">
+                {["Leaseholder", "Associate", "Partner", "Employee"].map((type) => (
+                  <FormControlLabel 
+                    key={type} 
+                    control={<Checkbox {...register("jobType")} value={type} />} 
+                    label={type} 
+                  />
+                ))}
+              </Box>
+            </Grid2>
+
+            {/* ✅ Submit Button & Save Template */}
+            {/* <Grid2 item xs={12} className="form-actions">
+              <Button type="submit" variant="contained" className="glass-button">
+                Submit Job
+              </Button>
+
+              <Box className="template-save">
+                <FormControlLabel 
+                  control={<Checkbox checked={saveTemplate} onChange={(e) => setSaveTemplate(e.target.checked)} />} 
+                  label="Save as Template" 
+                />
+                {saveTemplate && (
+                  <GlassTextField 
+                    label="Template Name" 
+                    fullWidth 
+                    {...register("templateName")} 
+                    variant="outlined" 
+                  />
+                )}
+              </Box>
+            </Grid2> */}
+
+<Grid2 item xs={12} className="form-actions">
+  <Box className="submit-save-container">
+    <Button type="submit" variant="contained" className="glass-button submit-job-button">
+      Submit Job
+    </Button>
+
+    <Box className="template-save">
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={saveTemplate}
+            onChange={(e) => setSaveTemplate(e.target.checked)}
+          />
+        }
+        label="Save as Template"
+      />
+
+      {saveTemplate && (
+        <GlassTextField
+          label="Template Name"
+          {...register("templateName")}
+          variant="outlined"
+          className="template-name-input"
+        />
+      )}
+    </Box>
+  </Box>
+</Grid2>
+
+
+          </Grid2>
+        </form>
+      </Paper>
+    </Container>
   );
-};
-
-// ✅ Styles for Better UI
-const styles = {
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    width: "300px",
-    margin: "20px auto",
-  },
-  submitButton: {
-    backgroundColor: "#005a78",
-    color: "white",
-    border: "none",
-    padding: "10px",
-    cursor: "pointer",
-    borderRadius: "5px",
-    fontSize: "16px",
-  },
 };
 
 export default AddJob;

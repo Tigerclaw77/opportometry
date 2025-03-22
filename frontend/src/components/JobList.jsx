@@ -1,138 +1,13 @@
-// import React, { useState, useEffect } from "react";
-// import axios from "axios"; // Import axios for API calls
-// import { useSelector } from "react-redux";
-// import "../styles/JobCard.css"; // Import the JobCard styles
-
-// const JobList = () => {
-//   const [jobs, setJobs] = useState([]); // Start with an empty array
-//   const [selectedJob, setSelectedJob] = useState(null);
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [favorites, setFavorites] = useState(new Set());
-//   const [isDarkMode, setIsDarkMode] = useState(false);
-
-//   // Access role from Redux (for conditional rendering of the edit button)
-//   const { role } = useSelector((state) => state.auth);
-
-//   // ✅ Fetch jobs from the API when component mounts
-//   useEffect(() => {
-//     const fetchJobs = async () => {
-//       try {
-//         const response = await axios.get("http://localhost:5000/api/jobs"); // Adjust URL if needed
-//         setJobs(response.data);
-//       } catch (error) {
-//         console.error("Error fetching jobs:", error);
-//       }
-//     };
-//     fetchJobs();
-//   }, []); // Runs only once when the component loads
-
-//   // ✅ Toggle dark mode
-//   useEffect(() => {
-//     if (isDarkMode) {
-//       document.body.classList.add("dark-mode");
-//     } else {
-//       document.body.classList.remove("dark-mode");
-//     }
-//   }, [isDarkMode]);
-
-//   const openModal = (job) => {
-//     setSelectedJob(job);
-//     setIsModalOpen(true);
-//   };
-
-//   const closeModal = () => {
-//     setSelectedJob(null);
-//     setIsModalOpen(false);
-//   };
-
-//   const toggleFavorite = (jobId) => {
-//     setFavorites((prevFavorites) => {
-//       const newFavorites = new Set(prevFavorites);
-//       if (newFavorites.has(jobId)) {
-//         newFavorites.delete(jobId);
-//       } else {
-//         newFavorites.add(jobId);
-//       }
-//       return newFavorites;
-//     });
-//   };
-
-//   const toggleDarkMode = () => {
-//     setIsDarkMode((prevMode) => !prevMode);
-//   };
-
-//   return (
-//     <div className="job-list">
-//       <h2>Available Jobs</h2>
-//       {/* Dark Mode Toggle Button */}
-//       <button onClick={toggleDarkMode} className="dark-mode-toggle">
-//         {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-//       </button>
-
-//       {jobs.length > 0 ? (
-//         <div className="job-cards">
-//           {jobs.map((job) => (
-//             <div
-//               key={job._id}
-//               className="job-card"
-//               onClick={() => openModal(job)}
-//             >
-//               <h3>{job.title}</h3>
-//               <p>{job.company}</p>
-//               <p>{job.location}</p>
-//               {/* Conditionally render the Edit button for admin or recruiter */}
-//               {(role === "admin" || role === "recruiter") && (
-//                 <button
-//                   onClick={(e) => {
-//                     e.stopPropagation();
-//                     console.log(`Edit job ${job._id}`);
-//                   }}
-//                 >
-//                   Edit
-//                 </button>
-//               )}
-//             </div>
-//           ))}
-//         </div>
-//       ) : (
-//         <p>No jobs available</p>
-//       )}
-
-//       {isModalOpen && selectedJob && (
-//         <div className="modal-overlay active" onClick={closeModal}>
-//           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-//             <h2>{selectedJob.title}</h2>
-//             <p>
-//               <strong>Company:</strong> {selectedJob.company}
-//             </p>
-//             <p>
-//               <strong>Location:</strong> {selectedJob.location}
-//             </p>
-//             <p>
-//               <strong>Description:</strong> {selectedJob.description}
-//             </p>
-//             <p>
-//               <strong>Salary:</strong> ${selectedJob.salary}
-//             </p>
-//             <button onClick={() => toggleFavorite(selectedJob._id)}>
-//               {favorites.has(selectedJob._id)
-//                 ? "Remove Favorite"
-//                 : "Add Favorite"}
-//             </button>
-//             <button onClick={closeModal}>Close</button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default JobList;
-
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Star, Eye, CheckCircle } from "lucide-react";
+import {
+  fetchJobs,
+  addJobToFavorites,
+  toggleWatchlistJob,
+  applyToJob,
+} from "../utils/api"; // ✅ API helper functions
 import "../styles/JobCard.css";
 
 const JobList = () => {
@@ -141,173 +16,176 @@ const JobList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
   const [watchList, setWatchList] = useState(new Set());
-  const [appliedJobs, setAppliedJobs] = useState({});
-  const { role } = useSelector((state) => state.auth);
+  const [appliedJobs, setAppliedJobs] = useState(new Set());
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [promptType, setPromptType] = useState("");
 
-  // Fetch jobs from API
+  const navigate = useNavigate();
+  const { userId, role } = useSelector((state) => state.auth);
+
+  // ✅ Fetch jobs
   useEffect(() => {
-    const fetchJobs = async () => {
+    const loadJobs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/jobs");
-        setJobs(response.data);
+        const data = await fetchJobs();
+        setJobs(data);
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error("Error fetching jobs:", error.message);
       }
     };
-    fetchJobs();
+
+    loadJobs();
   }, []);
 
-  // Load favorites, watchlist, and applied jobs from local storage
-  useEffect(() => {
-    setFavorites(
-      new Set(JSON.parse(localStorage.getItem("favoriteJobs")) || [])
-    );
-    setWatchList(new Set(JSON.parse(localStorage.getItem("watchJobs")) || []));
-    setAppliedJobs(JSON.parse(localStorage.getItem("appliedJobs")) || {});
-  }, []);
+  // ✅ Fetch user job-related data (optional)
+  // You can add an endpoint in `api.js` to handle this, but it's omitted for now
 
-  // Toggle favorite
-  const toggleFavorite = (jobId) => {
-    setFavorites((prev) => {
-      const updatedFavorites = new Set(prev);
-      if (updatedFavorites.has(jobId)) {
-        updatedFavorites.delete(jobId);
-      } else {
-        updatedFavorites.add(jobId);
-      }
-      localStorage.setItem(
-        "favoriteJobs",
-        JSON.stringify([...updatedFavorites])
-      );
-      return updatedFavorites;
-    });
+  // ✅ Toggle favorites
+  const handleFavorite = async (jobId) => {
+    if (!userId) {
+      setPromptType("favorite");
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    try {
+      await addJobToFavorites(jobId);
+
+      setFavorites((prev) => {
+        const updated = new Set(prev);
+        updated.has(jobId) ? updated.delete(jobId) : updated.add(jobId);
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error updating favorites:", error.message);
+    }
   };
 
-  // Toggle watchlist
-  const toggleWatch = (jobId) => {
-    setWatchList((prev) => {
-      const updatedWatchList = new Set(prev);
-      if (updatedWatchList.has(jobId)) {
-        updatedWatchList.delete(jobId);
-      } else {
-        updatedWatchList.add(jobId);
-      }
-      localStorage.setItem("watchJobs", JSON.stringify([...updatedWatchList]));
-      return updatedWatchList;
-    });
+  // ✅ Toggle watchlist
+  const handleWatchlist = async (jobId) => {
+    if (!userId) {
+      setPromptType("watchlist");
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    try {
+      await toggleWatchlistJob(jobId);
+
+      setWatchList((prev) => {
+        const updated = new Set(prev);
+        updated.has(jobId) ? updated.delete(jobId) : updated.add(jobId);
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error updating watchlist:", error.message);
+    }
   };
 
-  // Apply to job
-  const applyToJob = (jobId) => {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
-    setAppliedJobs((prev) => {
-      const updatedAppliedJobs = { ...prev, [jobId]: today };
-      localStorage.setItem("appliedJobs", JSON.stringify(updatedAppliedJobs));
-      return updatedAppliedJobs;
-    });
+  // ✅ Apply to job
+  const handleApply = async (jobId) => {
+    if (!userId) {
+      setPromptType("apply");
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    if (appliedJobs.has(jobId)) return;
+
+    try {
+      await applyToJob(jobId);
+
+      setAppliedJobs((prev) => {
+        const updated = new Set(prev);
+        updated.add(jobId);
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error applying to job:", error.message);
+    }
   };
 
-  // Open modal
+  // ✅ Modal handlers
   const openModal = (job) => {
     setSelectedJob(job);
     setIsModalOpen(true);
   };
 
-  // Close modal
   const closeModal = () => {
     setSelectedJob(null);
     setIsModalOpen(false);
   };
 
+  const closeAuthPrompt = () => {
+    setShowAuthPrompt(false);
+    setPromptType("");
+  };
+
   return (
     <div className="job-list">
       <h2>Available Jobs</h2>
+
       {jobs.length > 0 ? (
         <div className="job-cards">
           {jobs.map((job) => (
-            <div
-              key={job._id}
-              className="job-card"
-              onClick={() => openModal(job)}
-            >
-              {/* Icons with Native Tooltips */}
+            <div key={job._id} className="job-card" onClick={() => openModal(job)}>
+              {/* Icon Buttons */}
               <div className="job-icon-container">
+
+                {/* Favorite Icon */}
                 <div className="tooltip-wrapper">
                   <Star
                     size={18}
-                    className={
-                      favorites.has(job._id)
-                        ? "job-icon favorite active"
-                        : "job-icon favorite"
-                    }
+                    className={favorites.has(job._id) ? "job-icon favorite active" : "job-icon favorite"}
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(job._id);
+                      handleFavorite(job._id);
                     }}
                   />
-                  <span className="tooltip left-align-tooltip">
-                    {favorites.has(job._id)
-                      ? "Remove favorite"
-                      : "Add favorite"}
+                  <span className="tooltip favorite-tooltip">
+                    {favorites.has(job._id) ? "Remove favorite" : "Add favorite"}
                   </span>
                 </div>
 
+                {/* Watchlist Icon */}
                 <div className="tooltip-wrapper">
                   <Eye
                     size={18}
-                    className={
-                      watchList.has(job._id)
-                        ? "job-icon watchlist active"
-                        : "job-icon watchlist"
-                    }
+                    className={watchList.has(job._id) ? "job-icon watchlist active" : "job-icon watchlist"}
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleWatch(job._id);
+                      handleWatchlist(job._id);
                     }}
                   />
                   <span className="tooltip left-align-tooltip">
-                    {watchList.has(job._id)
-                      ? "Remove from watchlist"
-                      : "Watch this job"}
+                    {watchList.has(job._id) ? "Remove from watchlist" : "Watch this job"}
                   </span>
                 </div>
 
+                {/* Apply Icon */}
                 <div className="tooltip-wrapper">
                   <CheckCircle
                     size={18}
-                    className={
-                      appliedJobs[job._id]
-                        ? "job-icon applied active"
-                        : "job-icon applied"
-                    }
+                    className={appliedJobs.has(job._id) ? "job-icon applied active" : "job-icon applied"}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!appliedJobs[job._id]) applyToJob(job._id);
+                      handleApply(job._id);
                     }}
                   />
                   <span className="tooltip applied-tooltip">
-                    {appliedJobs[job._id]
-                      ? `You applied on ${appliedJobs[job._id]}`
-                      : "Apply here"}
+                    {appliedJobs.has(job._id) ? "You already applied" : "Apply here"}
                   </span>
                 </div>
               </div>
 
-              {/* Job Details */}
+              {/* Job Info */}
               <h3>{job.title}</h3>
               <p>{job.company}</p>
               <p>{job.location}</p>
 
-              {/* Edit button for admins/recruiters */}
+              {/* Edit Button */}
               {(role === "admin" || role === "recruiter") && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log(`Edit job ${job._id}`);
-                  }}
-                >
-                  Edit
-                </button>
+                <button onClick={(e) => e.stopPropagation()}>Edit</button>
               )}
             </div>
           ))}
@@ -316,24 +194,47 @@ const JobList = () => {
         <p>No jobs available</p>
       )}
 
-      {/* ✅ Modal Restored */}
+      {/* Modal - Job Details */}
       {isModalOpen && selectedJob && (
         <div className="modal-overlay active" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>{selectedJob.title}</h2>
-            <p>
-              <strong>Company:</strong> {selectedJob.company}
-            </p>
-            <p>
-              <strong>Location:</strong> {selectedJob.location}
-            </p>
-            <p>
-              <strong>Description:</strong> {selectedJob.description}
-            </p>
-            <p>
-              <strong>Salary:</strong> ${selectedJob.salary}
-            </p>
+            <p><strong>Company:</strong> {selectedJob.company}</p>
+            <p><strong>Location:</strong> {selectedJob.location}</p>
+            <p><strong>Description:</strong> {selectedJob.description}</p>
+            {selectedJob.salary && <p><strong>Salary:</strong> ${selectedJob.salary}</p>}
             <button onClick={closeModal}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal - Login/Register Prompt */}
+      {showAuthPrompt && (
+        <div className="modal-overlay active" onClick={closeAuthPrompt}>
+          <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
+            <h3>
+              {promptType === "favorite"
+                ? "Save to Favorites"
+                : promptType === "watchlist"
+                ? "Add to Watchlist"
+                : "Apply to Job"}
+            </h3>
+            <p>
+              You need to log in or register to{" "}
+              {promptType === "favorite"
+                ? "save this job"
+                : promptType === "watchlist"
+                ? "add this job to your watchlist"
+                : "apply for this job"}.
+            </p>
+
+            <div className="modal-buttons">
+              <button onClick={() => navigate("/login")}>Log In</button>
+              <button onClick={() => navigate("/register")}>Register</button>
+              <button className="close-btn" onClick={closeAuthPrompt}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

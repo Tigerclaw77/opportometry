@@ -80,6 +80,7 @@
 }
 
 .checkbox-group label {
+  
   line-height: 1.2;
   margin-top: -13px; /* Adjust if checkboxes appear too high */
 }

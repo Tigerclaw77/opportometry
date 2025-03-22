@@ -8,10 +8,15 @@
 }
 
 body {
+  background: url('/public/images/bg2.jpg') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  font-family: 'Roboto', sans-serif;
+  /* color: white; */
   margin: 0;
   padding: 0;
-  font-family: "Arial", sans-serif;
-  background-color: var(--background-color);
+  /* font-family: "Arial", sans-serif; */
+  /* background-color: var(--background-color); */
   color: var(--text-color);
   display: flex;
   flex-direction: column;
@@ -38,6 +43,35 @@ body {
   flex-direction: column;
 }
 
+body {
+  background: url("/public/images/bg2.jpg") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  font-family: "Roboto", sans-serif;
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ✅ Allow Forms to Override Global Background */
+.glass-form {
+  background: rgba(255, 255, 255, 0.1) !important; /* Ensure transparency applies */
+  backdrop-filter: blur(20px) saturate(150%) !important; /* Strengthen blur effect */
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 32px;
+  max-width: 700px;
+  margin: 40px auto;
+  color: white;
+  position: relative;
+  z-index: 10; /* Ensure it's visible over the background */
+}
+
+
 /* Navigation */
 nav {
   color: white;
@@ -62,6 +96,7 @@ nav a:hover {
 /* Buttons */
 button {
   padding: 12px 20px;
+  margin: 20px 0 0 15px;
   font-size: 16px;
   background-color: var(--primary-color);
   color: white;
@@ -77,17 +112,17 @@ button:hover {
 }
 
 /* Forms */
-form {
+/* form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
+} */
 
 .highlight {
   color: #e63946; /* Soft red */
 }
 
-input,
+/* input,
 textarea,
 select {
   width: 100%;
@@ -95,7 +130,7 @@ select {
   padding: 12px;
   border: 1px solid #bbb;
   border-radius: 6px;
-}
+} */
 
 textarea {
   resize: none;
@@ -194,7 +229,7 @@ h2 {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -275,8 +310,8 @@ h2 {
 }
 
 .footer-logo {
-  text-decoration: none; /* Remove underline */
-  color: white; /* Set color to match footer */
+  text-decoration: none;
+  color: white;
   font-weight: bold;
 }
 

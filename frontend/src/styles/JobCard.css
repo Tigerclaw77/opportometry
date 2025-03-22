@@ -214,11 +214,17 @@ body.dark-mode .job-card button:hover {
   position: absolute;
   left: 50%;
   bottom: 0%;
-  transform: translateX(-50%);
+  transform: translateX(30%);
   font-size: 12px;
   white-space: nowrap;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+
+.favorite-tooltip {
+  left: 2px; /* ✅ Adjust this value as needed */
+  text-align: left;
+  width: max-content;
 }
 
 /* Default left-aligned tooltips */
@@ -229,7 +235,7 @@ body.dark-mode .job-card button:hover {
 
 /* Applied tooltips moved slightly right for better alignment */
 .applied-tooltip {
-  left: 110px; /* ✅ Adjust this value as needed */
+  left: 5px; /* ✅ Adjust this value as needed */
   text-align: left;
   width: max-content;
 }

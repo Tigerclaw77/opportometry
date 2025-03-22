@@ -1,13 +1,29 @@
 import React from "react";
-import "../styles/Card.css"; // Import your styles here
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const Card = ({ title, children }) => {
-  return (
-    <div className="card">
-      <h3>{title}</h3>
-      <div>{children}</div>
-    </div>
-  );
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { token, role } = useSelector((state) => state.auth);
+
+  // Dev mode override (optional, depends on how you want to use this)
+  const isDevMode = process.env.REACT_APP_DEV_MODE === "true";
+
+  const currentRole = isDevMode ? "admin" : role;
+
+  // ✅ 1. Check for token (not just role)
+  if (!token && !isDevMode) {
+    console.warn("No token found. Redirecting to login...");
+    return <Navigate to="/login" replace />;
+  }
+
+  // ✅ 2. Role restriction (optional: default to ["candidate", "recruiter", "admin"] if no roles specified)
+  if (allowedRoles.length > 0 && !allowedRoles.includes(currentRole)) {
+    console.warn(`Unauthorized role (${currentRole}). Redirecting to unauthorized...`);
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // ✅ 3. Render protected content
+  return children;
 };
 
-export default Card;
+export default ProtectedRoute;
