@@ -1,248 +1,296 @@
-// 
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
+import {
+  fetchNotifications,
+  clearNotifications,
+} from "../store/notificationsSlice";
 import { FiBell, FiUser, FiLogOut, FiSettings } from "react-icons/fi";
 import LoadingSpinner from "./ui/LoadingSpinner";
+import "../styles/Header.css";
 
 const Header = () => {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+  const userRole = useSelector((state) => state.auth.userRole);
+  const hasUnreadNotifications = useSelector(
+    (state) => state.notifications.hasUnreadNotifications
+  );
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 769);
+
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleResize = () => setIsMobile(window.innerWidth < 769);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
-    }
-
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutsideDrawer = (event) => {
+      const drawer = document.querySelector(".slide-drawer");
+      const toggleButton = document.querySelector(".user-circle");
+      if (
+        drawer &&
+        !drawer.contains(event.target) &&
+        toggleButton &&
+        !toggleButton.contains(event.target)
+      ) {
+        setDrawerOpen(false);
+      }
+    };
+    if (drawerOpen) {
+      document.addEventListener("mousedown", handleClickOutsideDrawer);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideDrawer);
+    };
+  }, [drawerOpen]);
+
+  // ✅ Fetch notifications when user logs in
+  useEffect(() => {
+    if (token && user?._id) {
+      dispatch(fetchNotifications());
+    }
+  }, [token, user?._id, dispatch]);
+
   const openLogoutModal = () => setShowLogoutModal(true);
   const closeLogoutModal = () => setShowLogoutModal(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setLoading(true);
     setShowLogoutModal(false);
-
     setTimeout(() => {
       dispatch(logout());
+      dispatch(clearNotifications()); // ✅ Clears red dot on logout
       localStorage.removeItem("user");
       sessionStorage.removeItem("user");
-      setUser(null);
       setDropdownOpen(false);
+      setDrawerOpen(false);
       setLoading(false);
-      navigate("/logout-success");
+      navigate("/login");
     }, 1500);
+  };
+
+  const getProfileLink = () => {
+    switch (userRole) {
+      case "candidate":
+        return "/candidate/profile";
+      case "recruiter":
+        return "/recruiter/profile";
+      case "admin":
+        return "/admin/profile";
+      default:
+        return null;
+    }
+  };
+
+  const getInitials = () => {
+    const first = user?.profile?.firstName || "";
+    const last = user?.profile?.lastName || "";
+    return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
   };
 
   return (
     <>
       {loading && <LoadingSpinner />}
 
-      <header style={styles.header}>
-        <div style={styles.container}>
-          <Link to="/" style={styles.logo}>
+      <header className="header">
+        <div className="header-container">
+          <Link to="/" className="logo">
             jobs<span style={{ color: "#e63946" }}>.</span>vision
           </Link>
 
-          <nav style={styles.nav}>
-            <Link to="/notifications" style={styles.icon}><FiBell /></Link>
-
-            {user ? (
-              <div style={styles.accountContainer} ref={dropdownRef}>
-                <button style={styles.accountLink} onClick={() => setDropdownOpen(!dropdownOpen)}>
-                  <FiUser />
-                  <span style={styles.userName}>{user.name}</span>
-                </button>
-
-                {dropdownOpen && (
-                  <div style={styles.dropdownMenu}>
-                    <Link to="/account" style={styles.dropdownItem}>
-                      <FiSettings /> Profile
-                    </Link>
-                    <button style={styles.dropdownItem} onClick={openLogoutModal}>
-                      <FiLogOut /> Logout
-                    </button>
-                  </div>
+          {!isMobile && (
+            <nav className="nav">
+              <Link to="/notifications" className="icon notification-wrapper">
+                <FiBell />
+                {hasUnreadNotifications && (
+                  <span className="notification-dot" />
                 )}
-              </div>
-            ) : (
-              <Link to="/login" style={styles.icon}>
-                <FiUser />
-                <span style={styles.signInText}>Sign In</span>
               </Link>
-            )}
-          </nav>
+
+              {token ? (
+                <div className="account-container" ref={dropdownRef}>
+                  <button
+                    className="account-link"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                  >
+                    <FiUser />
+                    <span className="user-name">
+                      Welcome, <strong>{user?.profile?.firstName || user?.email}</strong>
+                    </span>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="dropdown-menu">
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          navigate("/notifications");
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        <span className="icon-wrapper">
+                          <FiBell />
+                          {hasUnreadNotifications && (
+                            <span className="dropdown-notification-dot" />
+                          )}
+                        </span>
+                        Notifications
+                      </button>
+                      {getProfileLink() && (
+                        <Link to={getProfileLink()} className="dropdown-item">
+                          <FiSettings /> Profile
+                        </Link>
+                      )}
+                      <button className="dropdown-item" onClick={openLogoutModal}>
+                        <FiLogOut /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link to="/login" className="icon">
+                  <FiUser />
+                  <span className="sign-in-text">Sign In</span>
+                </Link>
+              )}
+            </nav>
+          )}
+
+          {isMobile && token && (
+            <>
+              <button className="user-circle" onClick={() => setDrawerOpen(!drawerOpen)}>
+                <span className="initials">{getInitials()}</span>
+                {hasUnreadNotifications && <span className="notification-dot" />}
+              </button>
+
+              <div className={`slide-drawer ${drawerOpen ? "open" : ""}`}>
+                <div className="drawer-content">
+                  <p className="drawer-greeting">Welcome, {user?.profile?.firstName}</p>
+                  <button
+                    className="drawer-item notification-button"
+                    onClick={() => {
+                      navigate("/notifications");
+                      setDrawerOpen(false);
+                    }}
+                  >
+                    <span className="icon-wrapper">
+                      <FiBell />
+                      {hasUnreadNotifications && (
+                        <span className="drawer-notification-dot" />
+                      )}
+                    </span>
+                    Notifications
+                  </button>
+
+                  {getProfileLink() && (
+                    <button
+                      className="drawer-item"
+                      onClick={() => {
+                        navigate(getProfileLink());
+                        setDrawerOpen(false);
+                      }}
+                    >
+                      <FiSettings /> Profile
+                    </button>
+                  )}
+                  <button className="drawer-item" onClick={openLogoutModal}>
+                    <FiLogOut /> Logout
+                  </button>
+                </div>
+                <div className="drawer-top-slice"></div>
+                <div className="drawer-card-space"></div>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
       {showLogoutModal && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              textAlign: "center",
+              width: "300px",
+              boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+            }}
+          >
             <h3>Confirm Logout</h3>
             <p>Are you sure you want to log out?</p>
-            <div style={styles.buttonGroup}>
-              <button onClick={handleLogout} style={styles.confirm}>Yes, Logout</button>
-              <button onClick={closeLogoutModal} style={styles.cancel}>Cancel</button>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-around",
+                marginTop: "10px",
+              }}
+            >
+              <button
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: "#e63946",
+                  color: "white",
+                  padding: "8px 15px",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "4px",
+                }}
+              >
+                Yes, Logout
+              </button>
+              <button
+                onClick={closeLogoutModal}
+                style={{
+                  backgroundColor: "#ccc",
+                  padding: "8px 15px",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "4px",
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
     </>
   );
-};
-
-const styles = {
-  header: {
-    position: "sticky",
-    top: 0,
-    width: "100%",
-    background: "white",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-    padding: "2px 15px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: "60px",
-    zIndex: 1000,
-  },
-  container: {
-    width: "90%",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  logo: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    textDecoration: "none",
-    color: "#005a78",
-    marginLeft: "-10px",
-  },
-  nav: {
-    display: "flex",
-    gap: "20px",
-  },
-  icon: {
-    fontSize: "22px",
-    color: "#333",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "none",
-    border: "none",
-    padding: 0,
-    transition: "color 0.3s ease",
-  },
-  signInText: {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#333",
-  },
-  accountContainer: {
-    position: "relative",
-  },
-  accountLink: {
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    textDecoration: "none",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "500",
-  },
-  userName: {
-    fontSize: "14px",
-    color: "#333",
-    fontWeight: "500",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  dropdownMenu: {
-    position: "absolute",
-    top: "100%",
-    right: 0,
-    background: "white",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    borderRadius: "6px",
-    width: "150px",
-    display: "flex",
-    flexDirection: "column",
-    padding: "5px 0",
-    zIndex: 1001,
-  },
-  dropdownItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: "10px",
-    padding: "10px 15px",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#333",
-    textDecoration: "none",
-    transition: "background 0.3s ease",
-    width: "100%",
-    textAlign: "left",
-    cursor: "pointer",
-    background: "none",
-    border: "none",
-  },
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10000,
-  },
-  modal: {
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "8px",
-    textAlign: "center",
-    width: "300px",
-  },
-  buttonGroup: {
-    display: "flex",
-    justifyContent: "space-around",
-    marginTop: "10px",
-  },
-  confirm: {
-    backgroundColor: "#e63946",
-    color: "white",
-    padding: "8px 15px",
-    border: "none",
-    cursor: "pointer",
-  },
-  cancel: {
-    backgroundColor: "#ccc",
-    padding: "8px 15px",
-    border: "none",
-    cursor: "pointer",
-  },
 };
 
 export default Header;

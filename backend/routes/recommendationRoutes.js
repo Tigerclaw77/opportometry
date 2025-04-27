@@ -4,13 +4,13 @@ const router = express.Router();
 const Job = require("../models/Job");
 const User = require("../models/User");
 
-const { verifyRole } = require("../middleware/verifyRole"); // ✅ Import your new middleware
+const { verifyUserRole } = require("../middleware/verifyUserRole"); // ✅ Import your new middleware
 
 /**
  * ✅ Recommend Jobs Based on Saved Jobs & Applied Jobs
  * Candidates Only
  */
-router.get("/recommend-jobs", verifyRole("candidate"), async (req, res) => {
+router.get("/recommend-jobs", verifyUserRole("candidate"), async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
@@ -35,7 +35,7 @@ router.get("/recommend-jobs", verifyRole("candidate"), async (req, res) => {
  * ✅ Recommend Candidates Based on Job Post
  * Recruiters Only
  */
-router.get("/recommend-candidates/:jobId", verifyRole("recruiter"), async (req, res) => {
+router.get("/recommend-candidates/:jobId", verifyUserRole("recruiter"), async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId);
 
@@ -46,7 +46,7 @@ router.get("/recommend-candidates/:jobId", verifyRole("recruiter"), async (req, 
     // Find candidates who are interested in this role (example logic)
     const recommendedCandidates = await User.find({
       userRole: "candidate",
-      interestedRoles: job.role // assuming there's a field like this
+      interestedRoles: job.jobRole // assuming there's a field like this
     }).limit(5);
 
     res.json(recommendedCandidates);
@@ -59,7 +59,7 @@ router.get("/recommend-candidates/:jobId", verifyRole("recruiter"), async (req, 
 /**
  * ✅ AI-Powered Recommendations (Premium Candidates Only)
  */
-router.get("/recommend-jobs/ai", verifyRole("candidate"), async (req, res) => {
+router.get("/recommend-jobs/ai", verifyUserRole("candidate"), async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 

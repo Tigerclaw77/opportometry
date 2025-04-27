@@ -79,6 +79,20 @@ h2 {
   z-index: -1; /* Behind the content */
 }
 
+.job-card.highlighted {
+  outline: 5px solid #2196f3 !important;  /* Thicker outline */
+  box-shadow: 0 0 20px rgba(33, 150, 243, 1) !important;  /* Stronger box shadow */
+  background-color: #e3f2fd !important;  /* Lighter background for contrast */
+  transform: scale(1.1) !important;  /* More noticeable scale */
+  animation: pulse 0.8s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1.1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1.1); }
+}
+
 /* Text inside the job card */
 .job-card h3 {
   color: aliceblue;

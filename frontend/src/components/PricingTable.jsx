@@ -68,8 +68,8 @@ const recruiterFeaturesList = [
 ];
 
 const PricingTable = ({ user }) => {
-  const isCandidate = user?.role === "candidate" && user.tier < 2;
-  const isRecruiter = user?.role === "recruiter" && user.tier < 2;
+  const isCandidate = user?.userRole === "candidate" && user.tier < 2;
+  const isRecruiter = user?.userRole === "recruiter" && user.tier < 2;
 
   return (
     <div className="pricing-tables">

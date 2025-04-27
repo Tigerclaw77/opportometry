@@ -4,13 +4,13 @@ const router = express.Router();
 const User = require("../models/User");
 const Job = require("../models/Job");
 
-const { verifyRole } = require("../middleware/verifyRole");
+const { verifyUserRole } = require("../middleware/verifyUserRole");
 
 /**
  * ✅ GET all job data (favorites, watchlist, applied jobs)
  * GET /api/candidate/job-data
  */
-router.get("/job-data", verifyRole("candidate"), async (req, res) => {
+router.get("/job-data", verifyUserRole("candidate"), async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -29,7 +29,7 @@ router.get("/job-data", verifyRole("candidate"), async (req, res) => {
  * ✅ GET Watchlist Jobs
  * GET /api/candidate/watchlist
  */
-router.get("/watchlist", verifyRole("candidate"), async (req, res) => {
+router.get("/watchlist", verifyUserRole("candidate"), async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate("watchlistJobs");
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -44,7 +44,7 @@ router.get("/watchlist", verifyRole("candidate"), async (req, res) => {
  * ✅ Toggle Job in Watchlist
  * POST /api/candidate/watchlist/:jobId
  */
-router.post("/watchlist/:jobId", verifyRole("candidate"), async (req, res) => {
+router.post("/watchlist/:jobId", verifyUserRole("candidate"), async (req, res) => {
   try {
     const { jobId } = req.params;
     const user = await User.findById(req.user.id);
@@ -70,7 +70,7 @@ router.post("/watchlist/:jobId", verifyRole("candidate"), async (req, res) => {
  * ✅ Toggle Job in Favorites
  * POST /api/candidate/favorites/:jobId
  */
-router.post("/favorites/:jobId", verifyRole("candidate"), async (req, res) => {
+router.post("/favorites/:jobId", verifyUserRole("candidate"), async (req, res) => {
   try {
     const { jobId } = req.params;
     const user = await User.findById(req.user.id);
@@ -96,7 +96,7 @@ router.post("/favorites/:jobId", verifyRole("candidate"), async (req, res) => {
  * ✅ Apply to a Job
  * POST /api/candidate/apply/:jobId
  */
-router.post("/apply/:jobId", verifyRole("candidate"), async (req, res) => {
+router.post("/apply/:jobId", verifyUserRole("candidate"), async (req, res) => {
   try {
     const { jobId } = req.params;
 
@@ -124,7 +124,7 @@ router.post("/apply/:jobId", verifyRole("candidate"), async (req, res) => {
  * ✅ Remove Job from Applied Jobs
  * DELETE /api/candidate/applied/:jobId
  */
-router.delete("/applied/:jobId", verifyRole("candidate"), async (req, res) => {
+router.delete("/applied/:jobId", verifyUserRole("candidate"), async (req, res) => {
   try {
     const { jobId } = req.params;
 

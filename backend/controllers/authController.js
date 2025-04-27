@@ -1,4 +1,9 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
+console.log("🧪 Mongoose model keys:", mongoose.modelNames());
+console.log("🧩 User model path:", require.resolve("../models/User"));
+
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -36,15 +41,30 @@ const registerUser = async (req, res) => {
     }
 
     // ✅ Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     // ✅ Generate verification token
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
+    const testUser = new User({
+      email: "test@hookcheck.com",
+      password: "test123",
+      userRole: "recruiter",
+      isVerified: true,
+      profile: {
+        firstName: "Test",
+        lastName: "Hook",
+      },
+    });
+    
+    await testUser.save();
+    console.log("✅ TEST USER HASH:", testUser.password);
+    
+
     // ✅ Create new user
     const newUser = new User({
       email,
-      password: hashedPassword,
+      password,
       userRole,
       isVerified: false,
       verificationToken,
@@ -56,6 +76,8 @@ const registerUser = async (req, res) => {
     });
 
     await newUser.save();
+console.log("🔒 Stored hash:", newUser.password); // ← should be a bcrypt hash
+
 
     console.log("✅ User registered successfully:", newUser.email);
 
@@ -89,95 +111,264 @@ const registerUser = async (req, res) => {
 /**
  * ✅ Login User
  */
+// const loginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     console.log("🔍 Login attempt for:", email);
+
+//     if (!email || !password) {
+//       return res.status(400).json({
+//         fieldErrors: {
+//           email: !email ? "Email is required" : undefined,
+//           password: !password ? "Password is required" : undefined,
+//         },
+//         message: "Email and password are required.",
+//       });
+//     }
+
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(400).json({
+//         fieldErrors: { email: "Invalid email/password combination." },
+//         message: "Invalid email/password combination.",
+//       });
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+//       await user.save();
+
+//       const remainingAttempts = 5 - user.failedLoginAttempts;
+//       if (remainingAttempts <= 0) {
+//         return res.status(429).json({ message: "Too many failed login attempts." });
+//       }
+
+//       return res.status(400).json({
+//         fieldErrors: {
+//           password: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
+//         },
+//         message: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
+//       });
+//     }
+
+//     if (!user.isVerified) {
+//       return res.status(403).json({
+//         message: "Please verify your email before logging in.",
+//       });
+//     }
+
+//     user.failedLoginAttempts = 0;
+//     await user.save();
+
+//     // ✅ Fix: Use correct field for user ID
+//     const token = jwt.sign(
+//       { userId: user._id, userRole: user.userRole },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     ); 
+
+//     // ✅ Build basic user info for frontend
+//     const safeUser = {
+//       _id: user._id,
+//       email: user.email,
+//       userRole: user.userRole,
+//       profile: user.profile || {},
+//     };
+
+//     let dashboardRoute = "/";
+//     if (user.userRole === "admin") dashboardRoute = "/admin";
+//     else if (user.userRole === "recruiter") dashboardRoute = "/recruiter/dashboard";
+//     else if (user.userRole === "candidate") dashboardRoute = "/candidate/dashboard";
+
+//     console.log(`✅ ${user.email} logged in as ${user.userRole}`);
+//     console.log("✅ Final safeUser sent to client:", safeUser);
+
+//     return res.status(200).json({
+//       message: "Login successful.",
+//       token,
+//       userRole: user.userRole,
+//       redirect: dashboardRoute,
+//       user: safeUser, // ✅ Send full user data
+//     });
+//   } catch (error) {
+//     console.error("🚨 Login Error:", error.message);
+//     return res.status(500).json({ message: "Internal Server Error", details: error.message });
+//   }
+// };
+
+// const loginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     console.log("🔍 Login attempt for:", email);
+
+//     if (!email || !password) {
+//       return res.status(400).json({
+//         fieldErrors: {
+//           email: !email ? "Email is required" : undefined,
+//           password: !password ? "Password is required" : undefined,
+//         },
+//         message: "Email and password are required.",
+//       });
+//     }
+
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       console.log("❌ No user found with this email.");
+//       return res.status(400).json({
+//         fieldErrors: { email: "Invalid email/password combination." },
+//         message: "Invalid email/password combination.",
+//       });
+//     }
+
+//     console.log("🔐 Raw password from form:", password);
+//     console.log("🔒 Hashed password in DB:", user.password);
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     console.log("✅ Password match result:", isMatch);
+
+//     if (!isMatch) {
+//       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+//       await user.save();
+
+//       const remainingAttempts = 5 - user.failedLoginAttempts;
+//       console.log(`❌ Password mismatch. Attempts left: ${remainingAttempts}`);
+
+//       return res.status(400).json({
+//         fieldErrors: {
+//           password: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
+//         },
+//         message: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
+//       });
+//     }
+
+//     if (!user.isVerified) {
+//       console.log("⚠️ User is not verified.");
+//       return res.status(403).json({
+//         message: "Please verify your email before logging in.",
+//       });
+//     }
+
+//     // ✅ Reset failed attempts
+//     user.failedLoginAttempts = 0;
+//     await user.save();
+
+//     // ✅ Issue token
+//     const token = jwt.sign(
+//       { userId: user._id, userRole: user.userRole },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
+
+//     // ✅ Trim user for frontend
+//     const safeUser = {
+//       _id: user._id,
+//       email: user.email,
+//       userRole: user.userRole,
+//       profile: user.profile || {},
+//     };
+
+//     let redirect = "/";
+//     if (user.userRole === "admin") redirect = "/admin";
+//     else if (user.userRole === "recruiter") redirect = "/recruiter/dashboard";
+//     else if (user.userRole === "candidate") redirect = "/candidate/dashboard";
+
+//     console.log("✅ Login success. Sending:", {
+//       token,
+//       userRole: user.userRole,
+//       redirect,
+//       user: safeUser,
+//     });
+
+//     return res.status(200).json({
+//       message: "Login successful.",
+//       token,
+//       userRole: user.userRole,
+//       redirect,
+//       user: safeUser,
+//     });
+//   } catch (error) {
+//     console.error("🚨 Login Error:", error.message);
+//     return res.status(500).json({
+//       message: "Internal Server Error",
+//       details: error.message,
+//     });
+//   }
+// };
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log("🔍 Login attempt for:", email);
+    console.log("➡️ Raw password from form:", password);
 
     if (!email || !password) {
+      console.log("⚠️ Missing email or password");
       return res.status(400).json({
-        fieldErrors: {
-          email: !email ? "Email is required" : undefined,
-          password: !password ? "Password is required" : undefined,
-        },
         message: "Email and password are required.",
       });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("❌ No user found with this email.");
       return res.status(400).json({
-        fieldErrors: { email: "Invalid email/password combination." },
         message: "Invalid email/password combination.",
       });
     }
-    console.log("✅ User hashed password:", user.password);
-    console.log("✅ Password from login form:", password);
-    
+
+    console.log("🔒 Hashed password from DB:", user.password);
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("✅ Password match result:", isMatch);
+
     if (!isMatch) {
-      console.log(`🚨 Invalid password attempt for ${user.email}`);
-
-      // Increment failed login attempts
-      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
-      await user.save();
-
-      const remainingAttempts = 5 - user.failedLoginAttempts;
-
-      if (remainingAttempts <= 0) {
-        return res.status(429).json({
-          message: "Too many failed login attempts. Try again later.",
-        });
-      }
-
+      console.log("❌ Password mismatch");
       return res.status(400).json({
-        fieldErrors: {
-          password: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
-        },
-        message: `Invalid email/password combination. ${remainingAttempts} attempts remaining.`,
+        message: "Invalid email/password combination.",
       });
     }
 
-    // ✅ Check if user is verified
     if (!user.isVerified) {
+      console.log("⚠️ User not verified");
       return res.status(403).json({
-        message: "Please verify your email before logging in.",
+        message: "Please verify your email.",
       });
     }
 
-    // ✅ Reset failed login attempts after successful login
-    user.failedLoginAttempts = 0;
-    await user.save();
+    // const token = jwt.sign(
+    //   { userId: user._id, userRole: user.userRole },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "1h" }
+    // );
 
-    // ✅ Create JWT token
     const token = jwt.sign(
-      { userId: user._id, role: user.userRole },
+      { _id: user._id.toString(), userRole: user.userRole }, 
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "3h" }
     );
+    
 
-    // ✅ Define redirect route
-    let dashboardRoute = "/";
-    if (user.userRole === "admin") dashboardRoute = "/admin";
-    else if (user.userRole === "recruiter") dashboardRoute = "/recruiter/dashboard";
-    else if (user.userRole === "candidate") dashboardRoute = "/candidate/dashboard";
+    const safeUser = {
+      _id: user._id,
+      email: user.email,
+      userRole: user.userRole,
+      profile: user.profile,
+    };
 
-    console.log(`✅ ${user.email} logged in as ${user.userRole}`);
-
+    console.log("✅ Login successful");
     return res.status(200).json({
-      message: "Login successful.",
       token,
       userRole: user.userRole,
-      redirect: dashboardRoute,
+      redirect: "/recruiter/dashboard",
+      user: safeUser,
     });
+
   } catch (error) {
-    console.error("🚨 Login Error:", error.message);
-    return res.status(500).json({
-      message: "Internal Server Error",
-      details: error.message,
-    });
+    console.error("🚨 Login error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 /**
  * ✅ Forgot Password

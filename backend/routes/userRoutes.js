@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const { verifyRole } = require("../middleware/verifyRole");
+const { verifyUserRole } = require("../middleware/verifyUserRole");
 
 // Admin-only route
-router.get("/admin", verifyRole("admin"), (req, res) => {
+router.get("/admin", verifyUserRole("admin"), (req, res) => {
   res.json({ message: "Welcome, Admin!" });
 });
 
 // Admin-only route to fetch all users
-router.get("/", verifyRole("admin"), async (req, res) => {
+router.get("/", verifyUserRole("admin"), async (req, res) => {
   try {
     const users = await User.find(); // Fetch all users
     res.json(users); // Send as JSON response
@@ -20,12 +20,12 @@ router.get("/", verifyRole("admin"), async (req, res) => {
 });
 
 // Candidate-only route
-router.get("/candidate", verifyRole("candidate"), (req, res) => {
+router.get("/candidate", verifyUserRole("candidate"), (req, res) => {
   res.json({ message: "Welcome, Candidate!" });
 });
 
 // Recruiter-only route
-router.get("/recruiter", verifyRole("recruiter"), (req, res) => {
+router.get("/recruiter", verifyUserRole("recruiter"), (req, res) => {
   res.json({ message: "Welcome, Recruiter!" });
 });
 

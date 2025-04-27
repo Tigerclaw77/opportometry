@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { authenticateUser, verifyRole } = require("../middleware/auth");
+const { authenticateUser, verifyUserRole } = require("../middleware/auth");
 
 // ✅ Create a Checkout Session for Job Posting
-router.post("/create-checkout-session", authenticateUser, verifyRole("recruiter"), async (req, res) => {
+router.post("/create-checkout-session", authenticateUser, verifyUserRole("recruiter"), async (req, res) => {
   try {
     const { jobId, plan } = req.body;
     const pricing = {

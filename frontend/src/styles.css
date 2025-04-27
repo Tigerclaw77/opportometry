@@ -143,6 +143,13 @@ select:focus {
   border-color: var(--secondary-color);
 }
 
+.page-header {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 15px;
+  color: #fff;
+}
+
 /* Dashboard */
 .dashboard {
   display: grid;

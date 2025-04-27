@@ -37,7 +37,7 @@ import axios from "axios";
 const SearchJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [filters, setFilters] = useState({
-    role: "",
+    jobRole: "",
     hours: "",
     practiceMode: "",
     corporation: "",
@@ -85,8 +85,8 @@ const SearchJobs = () => {
 
       {/* ✅ Job Filters */}
       <div style={styles.filterContainer}>
-        <select onChange={(e) => setFilters({ ...filters, role: e.target.value })}>
-          <option value="">Select Role</option>
+        <select onChange={(e) => setFilters({ ...filters, jobRole: e.target.value })}>
+          <option value="">Select Job Role</option>
           <option value="Optometrist">Optometrist</option>
           <option value="Optician">Optician</option>
           <option value="Ophthalmologist">Ophthalmologist</option>
@@ -130,7 +130,7 @@ const SearchJobs = () => {
               <h3>{job.title} at {job.company}</h3>
               <p><strong>Description:</strong> {job.description}</p>
               <p><strong>Hours:</strong> {job.hours}</p>
-              <p><strong>Role:</strong> {job.role}</p>
+              <p><strong>Job Role:</strong> {job.jobRole}</p>
               <p><strong>Practice Mode:</strong> {job.practiceMode}</p>
 
               {/* ✅ Save & Share Job Buttons */}

@@ -24,12 +24,6 @@
   width: 150px;
 }
 
-/* .role-selection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-} */
-
 .inline-label {
   display: flex;
   align-items: center;

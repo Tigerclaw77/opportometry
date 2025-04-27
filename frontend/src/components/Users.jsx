@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No token found. Please log in.");
+      setLoading(false);
       return;
     }
 
@@ -28,6 +30,8 @@ const Users = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
       setError("Failed to fetch users.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,15 +43,21 @@ const Users = () => {
     <div>
       <h2>Registered Users</h2>
       {error && <p>{error}</p>}
-      {users.length > 0 ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : users.length > 0 ? (
         users.map((user) => (
-          <div key={user._id}>
-            <p>Name: {user.name}</p>
-            <p>Email: {user.email}</p>
+          <div key={user._id} style={{ marginBottom: "16px" }}>
+            <p>
+              <strong>Name:</strong> {user.profile?.firstName} {user.profile?.lastName}
+            </p>
+            <p>
+              <strong>Email:</strong> {user.email}
+            </p>
           </div>
         ))
       ) : (
-        <p>No users found</p>
+        <p>No users found.</p>
       )}
     </div>
   );

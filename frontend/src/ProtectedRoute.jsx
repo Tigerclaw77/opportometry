@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 
-const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+const ProtectedRoute = ({ children, allowedUserRoles = [] }) => {
   const isDevMode =
     process.env.NODE_ENV === "development" ||
     process.env.REACT_APP_DEV_MODE === "true" ||
@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   console.log("LocalStorage userData:", userData);
 
   const user = isDevMode
-    ? { role: "admin", token: "dev-token" } // ✅ Always fallback in dev
+    ? { userRole: "admin", token: "dev-token" } // ✅ Always fallback in dev
     : userData
       ? JSON.parse(userData)
       : null;
@@ -27,17 +27,17 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role === "admin") {
+  if (user.userRole === "admin") {
     console.log("✅ Admin override: access granted");
     return children;
   }
 
-  if (!allowedRoles.includes(user.role)) {
-    console.log(`❌ User role "${user.role}" not allowed. Redirecting to /unauthorized`);
+  if (!allowedUserRoles.includes(user.userRole)) {
+    console.log(`❌ userRole "${user.userRole}" not allowed. Redirecting to /unauthorized`);
     return <Navigate to="/unauthorized" replace />;
   }
 
-  console.log("✅ User role allowed: access granted");
+  console.log("✅ userRole allowed: access granted");
   return children;
 };
 

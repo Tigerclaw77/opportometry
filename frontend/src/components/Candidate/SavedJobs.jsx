@@ -38,7 +38,7 @@ const SavedJobs = () => {
           <li key={job._id} style={styles.jobItem}>
             <h3>{job.title} at {job.company}</h3>
             <p><strong>Hours:</strong> {job.hours}</p>
-            <p><strong>Role:</strong> {job.role}</p>
+            <p><strong>Role:</strong> {job.jobRole}</p>
             <p><strong>Practice Mode:</strong> {job.practiceMode}</p>
           </li>
         ))}

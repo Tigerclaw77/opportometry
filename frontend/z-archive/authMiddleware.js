@@ -1,4 +1,6 @@
-const verifyRole = (requiredRole) => {
+const jwt = require("jsonwebtoken");
+
+const verifyUserRole = (requiredUserRole) => {
   return (req, res, next) => {
     console.log("🔹 authMiddleware executing...");
     console.log("🔹 NODE_ENV:", process.env.NODE_ENV);
@@ -6,7 +8,7 @@ const verifyRole = (requiredRole) => {
     // ✅ Fully bypass authentication in development mode
     if (process.env.NODE_ENV === "development") {
       console.log("🟢 Development mode active: Skipping authentication.");
-      req.user = { id: "dev-admin-id", role: "admin" }; // ✅ Auto-admin
+      req.user = { id: "dev-admin-id", userRole: "admin" }; // ✅ Auto-admin
       return next();
     }
 
@@ -20,9 +22,9 @@ const verifyRole = (requiredRole) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (decoded.role !== requiredRole) {
-        console.log(`🔴 Access denied. User role: ${decoded.role}, Required: ${requiredRole}`);
-        return res.status(403).json({ message: `Access denied. Must be a ${requiredRole}.` });
+      if (decoded.userRole !== requiredUserRole) {
+        console.log(`🔴 Access denied. User role: ${decoded.userRole}, Required: ${requiredUserRole}`);
+        return res.status(403).json({ message: `Access denied. Must be a ${requiredUserRole}.` });
       }
       req.user = decoded;
       next();
@@ -33,4 +35,4 @@ const verifyRole = (requiredRole) => {
   };
 };
 
-module.exports = verifyRole;
+module.exports = verifyUserRole;

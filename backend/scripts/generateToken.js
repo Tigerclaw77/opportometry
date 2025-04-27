@@ -6,7 +6,7 @@ const JWT_SECRET = "your_jwt_secret"; // ✅ Replace with your actual secret!
 // Create a payload with user info (you can adjust as needed)
 const payload = {
   id: "admin-user-id", // ✅ Make this a real User _id from your DB if you want
-  role: "admin",        // Change to "recruiter" or "candidate" to test
+  userRole: "admin",        // Change to "recruiter" or "candidate" to test
   recruiterType: "corporate", // Optional, based on your logic
   corporation: "luxottica"    // Optional, for recruiter testing
 };

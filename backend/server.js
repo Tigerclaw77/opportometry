@@ -24,6 +24,7 @@ const registerRoutes = require('./routes/registerRoutes');
 const candidateRoutes = require("./routes/candidateRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const recommendationsRoutes = require('./routes/recommendationRoutes');
+const notificationRoutes = require("./routes/notificationRoutes");
 
 // Register the routes
 app.use('/api/jobs', jobRoutes);
@@ -34,6 +35,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/candidate', candidateRoutes); // ✅ If you prefer /api/candidates, change this
 app.use('/api/admin', adminRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Welcome Route
 app.get('/', (req, res) => {

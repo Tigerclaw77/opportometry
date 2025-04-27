@@ -1,29 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { Star, Eye, CheckCircle } from "lucide-react";
 import {
   fetchJobs,
   addJobToFavorites,
   toggleWatchlistJob,
   applyToJob,
-} from "../utils/api"; // ✅ API helper functions
+} from "../utils/api";
 import "../styles/JobCard.css";
+
+const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
   const [watchList, setWatchList] = useState(new Set());
   const [appliedJobs, setAppliedJobs] = useState(new Set());
-  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [promptType, setPromptType] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
-  const navigate = useNavigate();
-  const { userId, role } = useSelector((state) => state.auth);
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const markerCluster = useRef(null);
+  const cardRefs = useRef({});
 
-  // ✅ Fetch jobs
+  const { _id, userRole } = useSelector((state) => state.auth);
+
   useEffect(() => {
     const loadJobs = async () => {
       try {
@@ -37,156 +39,170 @@ const JobList = () => {
     loadJobs();
   }, []);
 
-  // ✅ Fetch user job-related data (optional)
-  // You can add an endpoint in `api.js` to handle this, but it's omitted for now
+  useEffect(() => {
+    if (!jobs.length) return;
 
-  // ✅ Toggle favorites
-  const handleFavorite = async (jobId) => {
-    if (!userId) {
-      setPromptType("favorite");
-      setShowAuthPrompt(true);
-      return;
+    const existingScript = document.getElementById("googleMaps");
+
+    const initMap = () => {
+      if (!mapRef.current) return;
+
+      mapInstance.current = new window.google.maps.Map(mapRef.current, {
+        center: { lat: 30.1659, lng: -95.4613 },
+        zoom: 9,
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
+
+      addMarkers();
+    };
+
+    const addMarkers = () => {
+      if (!mapInstance.current || !jobs.length) return;
+
+      const bounds = new window.google.maps.LatLngBounds();
+      const markers = [];
+
+      jobs.forEach((job) => {
+        if (job.latitude && job.longitude) {
+          const position = { lat: job.latitude, lng: job.longitude };
+          bounds.extend(position);
+
+          const marker = new window.google.maps.Marker({
+            position,
+            map: mapInstance.current,
+            title: job.title,
+          });
+
+          marker.addListener("click", () => {
+            setSelectedJob(job);
+            setIsModalOpen(true);
+          });
+
+          markers.push(marker);
+        }
+      });
+
+      if (markers.length > 0) {
+        mapInstance.current.fitBounds(bounds);
+      }
+
+      if (window.MarkerClusterer && markers.length > 0) {
+        markerCluster.current = new window.MarkerClusterer(mapInstance.current, markers, {
+          imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+        });
+      }
+    };
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.id = "googleMaps";
+      script.async = true;
+      script.defer = true;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    } else {
+      initMap();
     }
+  }, [jobs]);
 
+  const handleFavorite = async (jobId) => {
+    if (!_id) return;
     try {
       await addJobToFavorites(jobId);
-
-      setFavorites((prev) => {
-        const updated = new Set(prev);
-        updated.has(jobId) ? updated.delete(jobId) : updated.add(jobId);
-        return updated;
-      });
+      setFavorites((prev) =>
+        new Set(prev.has(jobId) ? [...prev].filter((id) => id !== jobId) : [...prev, jobId])
+      );
     } catch (error) {
       console.error("Error updating favorites:", error.message);
     }
   };
 
-  // ✅ Toggle watchlist
   const handleWatchlist = async (jobId) => {
-    if (!userId) {
-      setPromptType("watchlist");
-      setShowAuthPrompt(true);
-      return;
-    }
-
+    if (!_id) return;
     try {
       await toggleWatchlistJob(jobId);
-
-      setWatchList((prev) => {
-        const updated = new Set(prev);
-        updated.has(jobId) ? updated.delete(jobId) : updated.add(jobId);
-        return updated;
-      });
+      setWatchList((prev) =>
+        new Set(prev.has(jobId) ? [...prev].filter((id) => id !== jobId) : [...prev, jobId])
+      );
     } catch (error) {
       console.error("Error updating watchlist:", error.message);
     }
   };
 
-  // ✅ Apply to job
   const handleApply = async (jobId) => {
-    if (!userId) {
-      setPromptType("apply");
-      setShowAuthPrompt(true);
-      return;
-    }
-
+    if (!_id) return;
     if (appliedJobs.has(jobId)) return;
-
     try {
       await applyToJob(jobId);
-
-      setAppliedJobs((prev) => {
-        const updated = new Set(prev);
-        updated.add(jobId);
-        return updated;
-      });
+      setAppliedJobs((prev) => new Set(prev).add(jobId));
     } catch (error) {
       console.error("Error applying to job:", error.message);
     }
   };
 
-  // ✅ Modal handlers
-  const openModal = (job) => {
-    setSelectedJob(job);
-    setIsModalOpen(true);
-  };
-
   const closeModal = () => {
-    setSelectedJob(null);
     setIsModalOpen(false);
-  };
-
-  const closeAuthPrompt = () => {
-    setShowAuthPrompt(false);
-    setPromptType("");
+    setSelectedJob(null);
   };
 
   return (
     <div className="job-list">
       <h2>Available Jobs</h2>
 
+      <div
+        ref={mapRef}
+        style={{
+          width: "100%",
+          height: "300px",
+          marginBottom: "20px",
+          borderRadius: "10px",
+          overflow: "hidden",
+        }}
+      />
+
       {jobs.length > 0 ? (
         <div className="job-cards">
           {jobs.map((job) => (
-            <div key={job._id} className="job-card" onClick={() => openModal(job)}>
-              {/* Icon Buttons */}
+            <div
+              key={job._id}
+              className="job-card"
+              onClick={() => {
+                setSelectedJob(job);
+                setIsModalOpen(true);
+              }}
+            >
               <div className="job-icon-container">
-
-                {/* Favorite Icon */}
-                <div className="tooltip-wrapper">
-                  <Star
-                    size={18}
-                    className={favorites.has(job._id) ? "job-icon favorite active" : "job-icon favorite"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFavorite(job._id);
-                    }}
-                  />
-                  <span className="tooltip favorite-tooltip">
-                    {favorites.has(job._id) ? "Remove favorite" : "Add favorite"}
-                  </span>
-                </div>
-
-                {/* Watchlist Icon */}
-                <div className="tooltip-wrapper">
-                  <Eye
-                    size={18}
-                    className={watchList.has(job._id) ? "job-icon watchlist active" : "job-icon watchlist"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleWatchlist(job._id);
-                    }}
-                  />
-                  <span className="tooltip left-align-tooltip">
-                    {watchList.has(job._id) ? "Remove from watchlist" : "Watch this job"}
-                  </span>
-                </div>
-
-                {/* Apply Icon */}
-                <div className="tooltip-wrapper">
-                  <CheckCircle
-                    size={18}
-                    className={appliedJobs.has(job._id) ? "job-icon applied active" : "job-icon applied"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApply(job._id);
-                    }}
-                  />
-                  <span className="tooltip applied-tooltip">
-                    {appliedJobs.has(job._id) ? "You already applied" : "Apply here"}
-                  </span>
-                </div>
+                <Star
+                  size={18}
+                  className={favorites.has(job._id) ? "job-icon favorite active" : "job-icon favorite"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFavorite(job._id);
+                  }}
+                />
+                <Eye
+                  size={18}
+                  className={watchList.has(job._id) ? "job-icon watchlist active" : "job-icon watchlist"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWatchlist(job._id);
+                  }}
+                />
+                <CheckCircle
+                  size={18}
+                  className={appliedJobs.has(job._id) ? "job-icon applied active" : "job-icon applied"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleApply(job._id);
+                  }}
+                />
               </div>
 
-              {/* Job Info */}
               <h3>{job.title}</h3>
               <p>{job.company}</p>
               <p>{job.location}</p>
-
-              {/* Edit Button */}
-              {(role === "admin" || role === "recruiter") && (
-                <button onClick={(e) => e.stopPropagation()}>Edit</button>
-              )}
             </div>
           ))}
         </div>
@@ -194,7 +210,6 @@ const JobList = () => {
         <p>No jobs available</p>
       )}
 
-      {/* Modal - Job Details */}
       {isModalOpen && selectedJob && (
         <div className="modal-overlay active" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -203,38 +218,34 @@ const JobList = () => {
             <p><strong>Location:</strong> {selectedJob.location}</p>
             <p><strong>Description:</strong> {selectedJob.description}</p>
             {selectedJob.salary && <p><strong>Salary:</strong> ${selectedJob.salary}</p>}
-            <button onClick={closeModal}>Close</button>
-          </div>
-        </div>
-      )}
 
-      {/* Modal - Login/Register Prompt */}
-      {showAuthPrompt && (
-        <div className="modal-overlay active" onClick={closeAuthPrompt}>
-          <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
-            <h3>
-              {promptType === "favorite"
-                ? "Save to Favorites"
-                : promptType === "watchlist"
-                ? "Add to Watchlist"
-                : "Apply to Job"}
-            </h3>
-            <p>
-              You need to log in or register to{" "}
-              {promptType === "favorite"
-                ? "save this job"
-                : promptType === "watchlist"
-                ? "add this job to your watchlist"
-                : "apply for this job"}.
-            </p>
-
-            <div className="modal-buttons">
-              <button onClick={() => navigate("/login")}>Log In</button>
-              <button onClick={() => navigate("/register")}>Register</button>
-              <button className="close-btn" onClick={closeAuthPrompt}>
-                Cancel
-              </button>
+            <div className="modal-icons">
+              <Star
+                size={18}
+                className={favorites.has(selectedJob._id) ? "job-icon favorite active" : "job-icon favorite"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFavorite(selectedJob._id);
+                }}
+              />
+              <Eye
+                size={18}
+                className={watchList.has(selectedJob._id) ? "job-icon watchlist active" : "job-icon watchlist"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWatchlist(selectedJob._id);
+                }}
+              />
+              <CheckCircle
+                size={18}
+                className={appliedJobs.has(selectedJob._id) ? "job-icon applied active" : "job-icon applied"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleApply(selectedJob._id);
+                }}
+              />
             </div>
+            <button onClick={closeModal}>Close</button>
           </div>
         </div>
       )}

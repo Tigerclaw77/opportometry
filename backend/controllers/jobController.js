@@ -11,8 +11,21 @@ const corporationData = {
 // ✅ POST a Job (Recruiters Only)
 const postJob = async (req, res) => {
   try {
-    const { company, title, description, hours, role, practiceMode } = req.body;
-    const user = await User.findById(req.user.id);
+    const {
+      company,
+      title,
+      description,
+      hours,
+      jobRole,
+      practiceMode,
+      salary,
+      location,
+      state,
+      lat,
+      lng,
+    } = req.body;
+
+    const user = await User.findById(req.user._id);
 
     if (user.userRole !== "recruiter") {
       return res.status(403).json({ message: "Only recruiters can post jobs." });
@@ -25,17 +38,25 @@ const postJob = async (req, res) => {
     const newJob = new Job({
       title,
       description,
+      salary,
       company,
       corporation: user.recruiterType === "corporate" ? user.corporation : null,
       hours,
-      role,
+      jobRole,
       practiceMode,
       createdBy: user._id,
+      location: {
+        city: location,
+        state: state,
+        coordinates: {
+          lat: lat,
+          lng: lng,
+        },
+      },
     });
 
     await newJob.save();
     res.status(201).json({ message: "Job posted successfully!", job: newJob });
-
   } catch (error) {
     console.error("❌ Error posting job:", error.message);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -45,10 +66,10 @@ const postJob = async (req, res) => {
 // ✅ GET /search Jobs
 const searchJobs = async (req, res) => {
   try {
-    const { role, hours, practiceMode, corporation, company } = req.query;
+    const { jobRole, hours, practiceMode, corporation, company } = req.query;
     const query = {};
 
-    if (role) query.role = role;
+    if (jobRole) query.jobRole = jobRole;
     if (hours) query.hours = hours;
     if (practiceMode) query.practiceMode = practiceMode;
     if (corporation) query.corporation = corporation;
@@ -77,9 +98,9 @@ const seedJobs = async (req, res) => {
         corporation: "luxottica",
         company: "LensCrafters",
         hours: "full-time",
-        role: "Optometrist",
+        jobRole: "Optometrist",
         practiceMode: "employed",
-        createdBy: req.user.id,
+        createdBy: req.user._id,
       },
       {
         title: "Ophthalmologist",
@@ -87,9 +108,9 @@ const seedJobs = async (req, res) => {
         corporation: "visionworks",
         company: "Visionworks",
         hours: "part-time",
-        role: "Ophthalmologist",
+        jobRole: "Ophthalmologist",
         practiceMode: "contract",
-        createdBy: req.user.id,
+        createdBy: req.user._id,
       },
     ];
 
@@ -141,7 +162,7 @@ const deleteJob = async (req, res) => {
 // ✅ Optional: Save Job Template (High-Tier Recruiters)
 const saveJobTemplate = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
@@ -164,14 +185,14 @@ const saveJobTemplate = async (req, res) => {
   }
 };
 
+// ✅ GET Recruiter's Jobs
 const getRecruiterJobs = async (req, res) => {
   try {
-    const recruiterId = req.user.id;
-    const userRole = req.user.role;
+    const recruiterId = req.user._id;
+    const userRole = req.user.userRole;
 
     console.log("Requester:", { recruiterId, userRole });
 
-    // ✅ Admin gets ALL jobs, recruiters get their own
     const filter = userRole === "admin"
       ? {}
       : { createdBy: recruiterId };
@@ -183,14 +204,11 @@ const getRecruiterJobs = async (req, res) => {
       count: jobs.length,
       data: jobs,
     });
-
   } catch (error) {
     console.error("Error fetching recruiter jobs:", error);
     res.status(500).json({ message: "Failed to fetch recruiter jobs." });
   }
 };
-
-
 
 module.exports = {
   postJob,
@@ -199,5 +217,5 @@ module.exports = {
   updateJob,
   deleteJob,
   getRecruiterJobs,
-  saveJobTemplate, // Optional, depending on your routing
+  saveJobTemplate,
 };

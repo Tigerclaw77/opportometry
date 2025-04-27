@@ -21,11 +21,11 @@
 // };
 
 // /**
-//  * Middleware to authorize specific roles (e.g., only recruiters can post/edit jobs)
+//  * Middleware to authorize specific user roles (e.g., only recruiters can post/edit jobs)
 //  
-// const authorizeRoles = (allowedRoles) => (req, res, next) => {
-//   if (!req.user || !allowedRoles.includes(req.user.role)) {
-//     return res.status(403).json({ message: "Access denied: Unauthorized role" });
+// const authorizeUserRoles = (allowedUserRoles) => (req, res, next) => {
+//   if (!req.user || !allowedUserRoles.includes(req.user.userRole)) {
+//     return res.status(403).json({ message: "Access denied: Unauthorized user role" });
 //   }
 //   next();
 // };
@@ -53,7 +53,7 @@
 
 // module.exports = {
 //   authenticateUser,
-//   authorizeRoles,
+//   authorizeUserRoles,
 //   checkJobOwnership,
 // };
 
@@ -83,11 +83,11 @@ const authenticateUser = (req, res, next) => {
 };
 
 /**
- * Middleware to authorize specific roles (e.g., only recruiters can post/edit jobs)
+ * Middleware to authorize specific user roles (e.g., only recruiters can post/edit jobs)
  */
-const authorizeRoles = (allowedRoles) => (req, res, next) => {
-  if (!req.user || !allowedRoles.includes(req.user.role)) {
-    return res.status(403).json({ message: "Access denied: Unauthorized role" });
+const authorizeUserRoles = (allowedUserRoles) => (req, res, next) => {
+  if (!req.user || !allowedUserRoles.includes(req.user.userRole)) {
+    return res.status(403).json({ message: "Access denied: Unauthorized user role" });
   }
   next();
 };
@@ -115,6 +115,6 @@ const checkJobOwnership = async (req, res, next) => {
 
 module.exports = {
   authenticateUser,
-  authorizeRoles,
+  authorizeUserRoles,
   checkJobOwnership,
 };

@@ -24,8 +24,8 @@ const Home = () => {
   }, []);
 
   // Function to manually set a user role for testing
-  const handleUserChange = (role, tier = 0) => {
-    const newUser = role ? { role, tier } : null;
+  const handleUserChange = (userRole, tier = 0) => {
+    const newUser = userRole ? { userRole, tier } : null;
     setUser(newUser);
     localStorage.setItem("user", JSON.stringify(newUser)); // Persist across refreshes
   };

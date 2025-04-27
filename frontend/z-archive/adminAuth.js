@@ -9,10 +9,13 @@ const adminAuth = (req, res, next) => {
   // ✅ Bypass authentication in development mode
   if (process.env.NODE_ENV === "development") {
     console.log("🔧 Dev mode: skipping adminAuth check");
+    req.user = {
+      _id: "67ccb98f866cbc48ae78d3e0", // Your MongoDB ObjectId for dev mode
+      userRole: "admin",
+    };
     return next();
   }
 
-  // ✅ Expect Authorization header with Bearer token
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -22,19 +25,16 @@ const adminAuth = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // ✅ Verify token and decode payload
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Ensure user has admin role
-    if (decoded.role !== "admin") {
+    if (decoded.userRole !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    // ✅ Attach decoded user to request for future use
     req.user = decoded;
 
-    console.log(`✅ Admin access granted to user: ${decoded.userId}`);
-    next(); // ✅ Proceed to next middleware or controller
+    console.log(`✅ Admin access granted to user: ${decoded._id}`);
+    next();
   } catch (error) {
     console.error("🚨 Token verification failed:", error.message);
     return res.status(401).json({ message: "Invalid or expired token." });

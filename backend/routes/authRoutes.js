@@ -11,7 +11,7 @@ const rateLimit = require("express-rate-limit");
 const User = require("../models/User");
 
 // ✅ Middleware for verifying roles (e.g., recruiter, admin)
-const { verifyRole } = require("../middleware/verifyRole");
+const { verifyUserRole } = require("../middleware/verifyUserRole");
 
 // ✅ Rate Limiter: Limit login attempts
 const loginLimiter = rateLimit({

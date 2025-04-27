@@ -6,7 +6,7 @@ const OptionsSection = ({ user }) => {
   return (
     <div className="options-container">
       {/* GUEST (Not Logged In) */}
-      {!user && (
+      {(!user || user.userRole === "admin") && (
         <>
           {/* Buttons (Shown on Small Screens) */}
           <button
@@ -41,7 +41,7 @@ const OptionsSection = ({ user }) => {
       )}
 
       {/* RECRUITER OPTIONS */}
-      {user?.role === "recruiter" && (
+      {user?.userRole === "recruiter" && (
         <>
           <Link to="/jobs/post" className="option-card">
             <img src="/images/post-job.jpg" alt="Post a Job" />
@@ -61,7 +61,7 @@ const OptionsSection = ({ user }) => {
       )}
 
       {/* CANDIDATE OPTIONS (FREE TIER - 0) */}
-      {user?.role === "candidate" && user.tier === 0 && (
+      {user?.userRole === "candidate" && user.tier === 0 && (
         <>
           <Link to="/search/basic" className="option-card">
             <img src="/images/basic-search.jpg" alt="Basic Search" />
@@ -79,7 +79,7 @@ const OptionsSection = ({ user }) => {
       )}
 
       {/* CANDIDATE OPTIONS (LEVEL 1 - Tier 1) */}
-      {user?.role === "candidate" && user.tier === 1 && (
+      {user?.userRole === "candidate" && user.tier === 1 && (
         <>
           <Link to="/search/advanced" className="option-card">
             <img src="/images/advanced-search.jpg" alt="Enhanced Search" />
@@ -97,7 +97,7 @@ const OptionsSection = ({ user }) => {
       )}
 
       {/* CANDIDATE OPTIONS (LEVEL 2 - Tier 2) */}
-      {user?.role === "candidate" && user.tier === 2 && (
+      {user?.userRole === "candidate" && user.tier === 2 && (
         <>
           <Link to="/search/advanced" className="option-card">
             <img src="/images/advanced-search.jpg" alt="Premium Search" />
