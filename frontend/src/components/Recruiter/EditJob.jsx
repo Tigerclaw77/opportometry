@@ -1,58 +1,90 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
 import axios from "axios";
 
 const EditJob = ({ jobToEdit, onSuccess }) => {
   const { jobId } = useParams();
+
   const [formData, setFormData] = useState({
-    id: "", // This will hold the job ID when editing
     title: "",
     description: "",
     company: "",
-    location: "",
     salary: "",
-    jobType: [], // Array to store multiple options (e.g., full-time, part-time)
-    position: "", // Single value for position type (e.g., leaseholder, employee)
+    jobRole: "Optometrist",
+    hours: "full-time",
+    practiceMode: "employed",
+    setting: "private",
+    chainAffiliation: "",
+    ownershipTrack: "none",
+    location: "",
+    state: "",
+    lat: "",
+    lng: "",
   });
 
+  // Fetch job if not passed as prop
   useEffect(() => {
-    if (jobToEdit) {
-      setFormData(jobToEdit); // Pre-fill the form with job details
-    }
-  }, [jobToEdit]);
+    const loadJob = async () => {
+      if (!jobToEdit && jobId) {
+        try {
+          const res = await axios.get(
+            `http://localhost:5000/api/jobs/${jobId}`
+          );
+          const job = res.data;
+          setFormData({
+            ...job,
+            location: job.location?.city || "",
+            state: job.location?.state || "",
+            lat: job.location?.coordinates?.lat || "",
+            lng: job.location?.coordinates?.lng || "",
+          });
+        } catch (err) {
+          console.error("Failed to fetch job:", err);
+        }
+      } else if (jobToEdit) {
+        setFormData({
+          ...jobToEdit,
+          location: jobToEdit.location?.city || "",
+          state: jobToEdit.location?.state || "",
+          lat: jobToEdit.location?.coordinates?.lat || "",
+          lng: jobToEdit.location?.coordinates?.lng || "",
+        });
+      }
+    };
+
+    loadJob();
+  }, [jobId, jobToEdit]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (type === "checkbox") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: checked
-          ? [...prev[name], value] // Add value to array if checked
-          : prev[name].filter((item) => item !== value), // Remove value if unchecked
-      }));
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      if (formData.id) {
-        // Edit existing job
-        await axios.put(`http://localhost:5000/jobs/${formData.id}`, formData);
-        alert("Job updated successfully!");
-      } else {
-        alert("Job ID is missing!");
-        return;
-      }
+    const updatedPayload = {
+      ...formData,
+      location: {
+        city: formData.location,
+        state: formData.state,
+        coordinates: {
+          lat: parseFloat(formData.lat),
+          lng: parseFloat(formData.lng),
+        },
+      },
+    };
 
-      onSuccess(); // Trigger refresh on parent component
-    } catch (error) {
-      console.error("Error updating job:", error);
-      alert("Failed to update job");
+    try {
+      await axios.put(
+        `http://localhost:5000/api/jobs/${jobId}`,
+        updatedPayload
+      );
+      alert("Job updated successfully!");
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Error updating job:", err.message);
+      alert("Failed to update job.");
     }
   };
 
@@ -60,99 +92,100 @@ const EditJob = ({ jobToEdit, onSuccess }) => {
     <form onSubmit={handleSubmit}>
       <input
         name="title"
-        placeholder="Job Title"
+        placeholder="Title"
         value={formData.title}
         onChange={handleChange}
-        required
       />
       <textarea
         name="description"
         placeholder="Description"
         value={formData.description}
         onChange={handleChange}
-        required
       />
       <input
         name="company"
         placeholder="Company"
         value={formData.company}
         onChange={handleChange}
-        required
-      />
-      <input
-        name="location"
-        placeholder="Location"
-        value={formData.location}
-        onChange={handleChange}
-        required
       />
       <input
         name="salary"
         placeholder="Salary"
         value={formData.salary}
         onChange={handleChange}
-        required
       />
 
-      {/* Job Type (Checkboxes for part-time/full-time) */}
-      <fieldset>
-        <legend>Job Type</legend>
-        <label>
-          <input
-            type="checkbox"
-            name="jobType"
-            value="Full-time"
-            checked={formData.jobType.includes("Full-time")}
-            onChange={handleChange}
-          />
-          Full-time
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            name="jobType"
-            value="Part-time"
-            checked={formData.jobType.includes("Part-time")}
-            onChange={handleChange}
-          />
-          Part-time
-        </label>
-      </fieldset>
+      <select name="jobRole" value={formData.jobRole} onChange={handleChange}>
+        <option value="Optometrist">Optometrist</option>
+        <option value="Ophthalmologist">Ophthalmologist</option>
+        <option value="Optician">Optician</option>
+      </select>
 
-      {/* Position Type (Radio buttons for leaseholder, associate, or employee) */}
-      <fieldset>
-        <legend>Position Type</legend>
-        <label>
-          <input
-            type="radio"
-            name="position"
-            value="Leaseholder"
-            checked={formData.position === "Leaseholder"}
-            onChange={handleChange}
-          />
-          Leaseholder
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="position"
-            value="Associate"
-            checked={formData.position === "Associate"}
-            onChange={handleChange}
-          />
-          Associate
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="position"
-            value="Employee"
-            checked={formData.position === "Employee"}
-            onChange={handleChange}
-          />
-          Employee
-        </label>
-      </fieldset>
+      <select name="hours" value={formData.hours} onChange={handleChange}>
+        <option value="full-time">Full-time</option>
+        <option value="part-time">Part-time</option>
+        <option value="per diem">Per Diem</option>
+      </select>
+
+      <select
+        name="practiceMode"
+        value={formData.practiceMode}
+        onChange={handleChange}
+      >
+        <option value="employed">Employed</option>
+        <option value="contract">Contract</option>
+        <option value="lease">Lease</option>
+        <option value="associate">Associate</option>
+      </select>
+
+      <select name="setting" value={formData.setting} onChange={handleChange}>
+        <option value="private">Private Practice</option>
+        <option value="retail">Retail</option>
+        <option value="medical">Medical Group</option>
+        <option value="surgical">Surgical Center</option>
+      </select>
+
+      <input
+        name="chainAffiliation"
+        placeholder="Chain Affiliation (e.g. Luxottica)"
+        value={formData.chainAffiliation}
+        onChange={handleChange}
+      />
+
+      <select
+        name="ownershipTrack"
+        value={formData.ownershipTrack}
+        onChange={handleChange}
+      >
+        <option value="none">None</option>
+        <option value="available">Available</option>
+        <option value="required">Required</option>
+      </select>
+
+      <input
+        name="location"
+        placeholder="City"
+        value={formData.location}
+        onChange={handleChange}
+      />
+      <input
+        name="state"
+        placeholder="State"
+        value={formData.state}
+        onChange={handleChange}
+      />
+      <input
+        name="lat"
+        placeholder="Latitude"
+        value={formData.lat}
+        onChange={handleChange}
+      />
+      <input
+        name="lng"
+        placeholder="Longitude"
+        value={formData.lng}
+        onChange={handleChange}
+      />
 
       <button type="submit">Update Job</button>
     </form>

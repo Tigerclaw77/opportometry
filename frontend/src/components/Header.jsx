@@ -128,6 +128,12 @@ const Header = () => {
                 )}
               </Link>
 
+              {process.env.NODE_ENV === "development" && (
+                <Link to="/role-switcher" className="icon dev-tools-link">
+                  🔧 Dev
+                </Link>
+              )}
+
               {token ? (
                 <div className="account-container" ref={dropdownRef}>
                   <button
@@ -136,7 +142,8 @@ const Header = () => {
                   >
                     <FiUser />
                     <span className="user-name">
-                      Welcome, <strong>{user?.profile?.firstName || user?.email}</strong>
+                      Welcome,{" "}
+                      <strong>{user?.profile?.firstName || user?.email}</strong>
                     </span>
                   </button>
 
@@ -162,7 +169,10 @@ const Header = () => {
                           <FiSettings /> Profile
                         </Link>
                       )}
-                      <button className="dropdown-item" onClick={openLogoutModal}>
+                      <button
+                        className="dropdown-item"
+                        onClick={openLogoutModal}
+                      >
                         <FiLogOut /> Logout
                       </button>
                     </div>
@@ -179,14 +189,21 @@ const Header = () => {
 
           {isMobile && token && (
             <>
-              <button className="user-circle" onClick={() => setDrawerOpen(!drawerOpen)}>
+              <button
+                className="user-circle"
+                onClick={() => setDrawerOpen(!drawerOpen)}
+              >
                 <span className="initials">{getInitials()}</span>
-                {hasUnreadNotifications && <span className="notification-dot" />}
+                {hasUnreadNotifications && (
+                  <span className="notification-dot" />
+                )}
               </button>
 
               <div className={`slide-drawer ${drawerOpen ? "open" : ""}`}>
                 <div className="drawer-content">
-                  <p className="drawer-greeting">Welcome, {user?.profile?.firstName}</p>
+                  <p className="drawer-greeting">
+                    Welcome, {user?.profile?.firstName}
+                  </p>
                   <button
                     className="drawer-item notification-button"
                     onClick={() => {

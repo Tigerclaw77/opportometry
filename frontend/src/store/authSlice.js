@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const rawUser = JSON.parse(localStorage.getItem("user"));
+// Safely load user from localStorage
+const storedUser = localStorage.getItem("user");
+const rawUser = storedUser ? JSON.parse(storedUser) : null;
 
 const initialState = {
   token: localStorage.getItem("token") || null,
   userRole: localStorage.getItem("userRole") || null,
-  user: rawUser || null,  // ✅ Correctly extract `.user`
+  user: rawUser || null,
 };
 
 const authSlice = createSlice({
@@ -23,14 +25,14 @@ const authSlice = createSlice({
       localStorage.setItem("userRole", userRole);
       localStorage.setItem("user", JSON.stringify(user));
 
-      console.log("Dispatched user data:", { token, userRole, user }); // Log dispatched data
+      console.log("Dispatched user data:", { token, userRole, user });
     },
     logout(state) {
       state.token = null;
       state.userRole = null;
       state.user = null;
 
-      // Remove token, user, and userRole from localStorage
+      // Remove from localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("userRole");
       localStorage.removeItem("user");

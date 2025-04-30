@@ -72,7 +72,9 @@ const AddJob = () => {
     setLoadingSuggestions(true);
     try {
       const response = await fetch(
-        `https://places.googleapis.com/v1/places:autocomplete?input=${encodeURIComponent(input)}&key=${GOOGLE_MAPS_API_KEY}&languageCode=en`
+        `https://places.googleapis.com/v1/places:autocomplete?input=${encodeURIComponent(
+          input
+        )}&key=${GOOGLE_MAPS_API_KEY}&languageCode=en`
       );
       const data = await response.json();
       const predictions = data?.suggestions || [];
@@ -112,7 +114,12 @@ const AddJob = () => {
       setValue("state", state);
 
       setSuggestions([]);
-      console.log("📍 Location selected:", { formattedAddress, lat, lng, state });
+      console.log("📍 Location selected:", {
+        formattedAddress,
+        lat,
+        lng,
+        state,
+      });
     } catch (error) {
       console.error("Error getting place details:", error);
     }
@@ -144,7 +151,6 @@ const AddJob = () => {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="form-container">
-
             {/* ✅ Job Title */}
             <GlassTextField
               label="Job Title"
@@ -166,7 +172,10 @@ const AddJob = () => {
             />
 
             {/* ✅ Location Autocomplete (Debounced) */}
-            <Box className="glass-input half-width single-line" sx={{ position: "relative" }}>
+            <Box
+              className="glass-input half-width single-line"
+              sx={{ position: "relative" }}
+            >
               <TextField
                 label="Location"
                 placeholder="City, State or ZIP code"
@@ -177,7 +186,9 @@ const AddJob = () => {
                 fullWidth
               />
 
-              {loadingSuggestions && <Typography variant="body2">Loading...</Typography>}
+              {loadingSuggestions && (
+                <Typography variant="body2">Loading...</Typography>
+              )}
 
               {suggestions.length > 0 && (
                 <Box
@@ -196,7 +207,10 @@ const AddJob = () => {
                       key={idx}
                       onClick={() => handleSuggestionSelect(suggestion)}
                     >
-                      {suggestion.placePrediction?.text?.structuredFormat?.mainText?.text}
+                      {
+                        suggestion.placePrediction?.text?.structuredFormat
+                          ?.mainText?.text
+                      }
                     </MenuItem>
                   ))}
                 </Box>
@@ -246,26 +260,84 @@ const AddJob = () => {
             {/* ✅ Job Status Checkboxes */}
             <Box className="checkbox-group">
               <Typography variant="h6">Job Status</Typography>
-              {["Full-time", "Part-time", "Per Diem / Contract"].map((status) => (
-                <FormControlLabel
-                  key={status}
-                  control={<Checkbox {...register("jobStatus")} value={status} />}
-                  label={status}
-                />
-              ))}
+              {["Full-time", "Part-time", "Per Diem / Contract"].map(
+                (status) => (
+                  <FormControlLabel
+                    key={status}
+                    control={
+                      <Checkbox {...register("jobStatus")} value={status} />
+                    }
+                    label={status}
+                  />
+                )
+              )}
             </Box>
 
             {/* ✅ Job Type Checkboxes */}
             <Box className="checkbox-group">
               <Typography variant="h6">Job Type</Typography>
-              {["Leaseholder", "Associate", "Partner", "Employee"].map((type) => (
-                <FormControlLabel
-                  key={type}
-                  control={<Checkbox {...register("jobType")} value={type} />}
-                  label={type}
-                />
-              ))}
+              {["Leaseholder", "Associate", "Partner", "Employee"].map(
+                (type) => (
+                  <FormControlLabel
+                    key={type}
+                    control={<Checkbox {...register("jobType")} value={type} />}
+                    label={type}
+                  />
+                )
+              )}
             </Box>
+
+            {/* ✅ Setting (Dropdown) */}
+            <GlassTextField
+              select
+              label="Practice Setting"
+              {...register("setting")}
+              defaultValue=""
+              className="glass-input half-width"
+              fullWidth
+            >
+              {["private", "retail", "hospital", "mobile", "academic"].map(
+                (option) => (
+                  <MenuItem key={option} value={option}>
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </MenuItem>
+                )
+              )}
+            </GlassTextField>
+
+            {/* ✅ Chain Affiliation (Dropdown) */}
+            <GlassTextField
+              select
+              label="Chain Affiliation"
+              {...register("chainAffiliation")}
+              defaultValue=""
+              className="glass-input half-width"
+              fullWidth
+            >
+              {["luxottica", "walmart", "visionworks", "other", "none"].map(
+                (option) => (
+                  <MenuItem key={option} value={option}>
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </MenuItem>
+                )
+              )}
+            </GlassTextField>
+
+            {/* ✅ Ownership Track (Dropdown) */}
+            <GlassTextField
+              select
+              label="Ownership Track"
+              {...register("ownershipTrack")}
+              defaultValue=""
+              className="glass-input half-width"
+              fullWidth
+            >
+              {["none", "potential", "required"].map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </MenuItem>
+              ))}
+            </GlassTextField>
 
             {/* ✅ Submit and Template Save */}
             <Box className="submit-save-container">
@@ -298,7 +370,6 @@ const AddJob = () => {
                 )}
               </Box>
             </Box>
-
           </div>
         </form>
       </Paper>

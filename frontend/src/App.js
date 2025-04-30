@@ -2,7 +2,10 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login, logout } from "./store/authSlice";
-import { fetchNotifications, clearNotifications } from "./store/notificationsSlice";
+import {
+  fetchNotifications,
+  clearNotifications,
+} from "./store/notificationsSlice";
 
 import Login from "./components/Login";
 import Logout from "./components/Logout";
@@ -30,6 +33,8 @@ import EditJob from "./components/Recruiter/EditJob";
 import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
 import Footer from "./components/Footer";
+
+import RoleSwitcher from "./components/RoleSwitcher";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
@@ -80,7 +85,9 @@ function App() {
             <Route
               path="/profile"
               element={
-                <ProtectedRoute allowedUserRoles={["admin", "recruiter", "candidate"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["admin", "recruiter", "candidate"]}
+                >
                   <Profile />
                 </ProtectedRoute>
               }
@@ -113,11 +120,16 @@ function App() {
             />
 
             {/* Recruiter Routes */}
-            <Route path="/recruiter/register" element={<RecruiterRegistration />} />
+            <Route
+              path="/recruiter/register"
+              element={<RecruiterRegistration />}
+            />
             <Route
               path="/recruiter/dashboard"
               element={
-                <ProtectedRoute allowedUserRoles={["recruiter", "premiumrecruiter"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["recruiter", "premiumrecruiter"]}
+                >
                   <RecruiterDashboard />
                 </ProtectedRoute>
               }
@@ -133,7 +145,9 @@ function App() {
             <Route
               path="/recruiter/addjob"
               element={
-                <ProtectedRoute allowedUserRoles={["recruiter", "premiumrecruiter", "admin"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["recruiter", "premiumrecruiter", "admin"]}
+                >
                   <AddJob />
                 </ProtectedRoute>
               }
@@ -141,18 +155,25 @@ function App() {
             <Route
               path="/recruiter/editjob/:jobId"
               element={
-                <ProtectedRoute allowedUserRoles={["recruiter", "premiumrecruiter"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["recruiter", "premiumrecruiter"]}
+                >
                   <EditJob />
                 </ProtectedRoute>
               }
             />
 
             {/* Candidate Routes */}
-            <Route path="/candidate/register" element={<CandidateRegistration />} />
+            <Route
+              path="/candidate/register"
+              element={<CandidateRegistration />}
+            />
             <Route
               path="/candidate/dashboard"
               element={
-                <ProtectedRoute allowedUserRoles={["candidate", "premiumcandidate"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["candidate", "premiumcandidate"]}
+                >
                   <CandidateDashboard />
                 </ProtectedRoute>
               }
@@ -168,7 +189,9 @@ function App() {
             <Route
               path="/search-jobs"
               element={
-                <ProtectedRoute allowedUserRoles={["candidate", "premiumcandidate"]}>
+                <ProtectedRoute
+                  allowedUserRoles={["candidate", "premiumcandidate"]}
+                >
                   <SearchJobs />
                 </ProtectedRoute>
               }
@@ -181,6 +204,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/role-switcher" element={<RoleSwitcher />} />
           </Routes>
         </div>
         <Footer />

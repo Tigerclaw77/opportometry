@@ -18,13 +18,14 @@ const JobList = () => {
   const [appliedJobs, setAppliedJobs] = useState(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [showMap, setShowMap] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markerCluster = useRef(null);
-  const cardRefs = useRef({});
 
-  const { _id, userRole } = useSelector((state) => state.auth);
+  const { _id } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const loadJobs = async () => {
@@ -40,9 +41,7 @@ const JobList = () => {
   }, []);
 
   useEffect(() => {
-    if (!jobs.length) return;
-
-    const existingScript = document.getElementById("googleMaps");
+    if (!showMap || !jobs.length) return;
 
     const initMap = () => {
       if (!mapRef.current) return;
@@ -53,12 +52,6 @@ const JobList = () => {
         mapTypeControl: false,
         streetViewControl: false,
       });
-
-      addMarkers();
-    };
-
-    const addMarkers = () => {
-      if (!mapInstance.current || !jobs.length) return;
 
       const bounds = new window.google.maps.LatLngBounds();
       const markers = [];
@@ -88,31 +81,50 @@ const JobList = () => {
       }
 
       if (window.MarkerClusterer && markers.length > 0) {
-        markerCluster.current = new window.MarkerClusterer(mapInstance.current, markers, {
-          imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
-        });
+        markerCluster.current = new window.MarkerClusterer(
+          mapInstance.current,
+          markers,
+          {
+            imagePath:
+              "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m",
+          }
+        );
       }
     };
 
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.id = "googleMaps";
-      script.async = true;
-      script.defer = true;
-      script.onload = initMap;
-      document.body.appendChild(script);
+    if (!window.google?.maps) {
+      const existingScript = document.getElementById("googleMaps");
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.id = "googleMaps";
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          setMapReady(true);
+        };
+        document.body.appendChild(script);
+      }
     } else {
-      initMap();
+      setMapReady(true);
     }
-  }, [jobs]);
+
+    if (mapReady) {
+      setTimeout(initMap, 0); // give DOM time to stabilize
+    }
+  }, [showMap, jobs, mapReady]);
 
   const handleFavorite = async (jobId) => {
     if (!_id) return;
     try {
       await addJobToFavorites(jobId);
-      setFavorites((prev) =>
-        new Set(prev.has(jobId) ? [...prev].filter((id) => id !== jobId) : [...prev, jobId])
+      setFavorites(
+        (prev) =>
+          new Set(
+            prev.has(jobId)
+              ? [...prev].filter((id) => id !== jobId)
+              : [...prev, jobId]
+          )
       );
     } catch (error) {
       console.error("Error updating favorites:", error.message);
@@ -123,8 +135,13 @@ const JobList = () => {
     if (!_id) return;
     try {
       await toggleWatchlistJob(jobId);
-      setWatchList((prev) =>
-        new Set(prev.has(jobId) ? [...prev].filter((id) => id !== jobId) : [...prev, jobId])
+      setWatchList(
+        (prev) =>
+          new Set(
+            prev.has(jobId)
+              ? [...prev].filter((id) => id !== jobId)
+              : [...prev, jobId]
+          )
       );
     } catch (error) {
       console.error("Error updating watchlist:", error.message);
@@ -149,11 +166,23 @@ const JobList = () => {
 
   return (
     <div className="job-list">
-      <h2>Available Jobs</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h2>Available Jobs</h2>
+        <button onClick={() => setShowMap((prev) => !prev)}>
+          {showMap ? "Hide Map" : "Show Map"}
+        </button>
+      </div>
 
       <div
         ref={mapRef}
         style={{
+          display: showMap ? "block" : "none",
           width: "100%",
           height: "300px",
           marginBottom: "20px",
@@ -162,67 +191,88 @@ const JobList = () => {
         }}
       />
 
-      {jobs.length > 0 ? (
-        <div className="job-cards">
-          {jobs.map((job) => (
-            <div
-              key={job._id}
-              className="job-card"
-              onClick={() => {
-                setSelectedJob(job);
-                setIsModalOpen(true);
-              }}
-            >
-              <div className="job-icon-container">
-                <Star
-                  size={18}
-                  className={favorites.has(job._id) ? "job-icon favorite active" : "job-icon favorite"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFavorite(job._id);
-                  }}
-                />
-                <Eye
-                  size={18}
-                  className={watchList.has(job._id) ? "job-icon watchlist active" : "job-icon watchlist"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWatchlist(job._id);
-                  }}
-                />
-                <CheckCircle
-                  size={18}
-                  className={appliedJobs.has(job._id) ? "job-icon applied active" : "job-icon applied"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleApply(job._id);
-                  }}
-                />
-              </div>
-
-              <h3>{job.title}</h3>
-              <p>{job.company}</p>
-              <p>{job.location}</p>
+      <div className="job-cards">
+        {jobs.map((job) => (
+          <div
+            key={job._id}
+            className="job-card"
+            onClick={() => {
+              setSelectedJob(job);
+              setIsModalOpen(true);
+            }}
+          >
+            <div className="job-icon-container">
+              <Star
+                size={18}
+                className={
+                  favorites.has(job._id)
+                    ? "job-icon favorite active"
+                    : "job-icon favorite"
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFavorite(job._id);
+                }}
+              />
+              <Eye
+                size={18}
+                className={
+                  watchList.has(job._id)
+                    ? "job-icon watchlist active"
+                    : "job-icon watchlist"
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWatchlist(job._id);
+                }}
+              />
+              <CheckCircle
+                size={18}
+                className={
+                  appliedJobs.has(job._id)
+                    ? "job-icon applied active"
+                    : "job-icon applied"
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleApply(job._id);
+                }}
+              />
             </div>
-          ))}
-        </div>
-      ) : (
-        <p>No jobs available</p>
-      )}
+            <h3>{job.title}</h3>
+            <p>{job.company}</p>
+            <p>{job.location}</p>
+          </div>
+        ))}
+      </div>
 
       {isModalOpen && selectedJob && (
         <div className="modal-overlay active" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>{selectedJob.title}</h2>
-            <p><strong>Company:</strong> {selectedJob.company}</p>
-            <p><strong>Location:</strong> {selectedJob.location}</p>
-            <p><strong>Description:</strong> {selectedJob.description}</p>
-            {selectedJob.salary && <p><strong>Salary:</strong> ${selectedJob.salary}</p>}
+            <p>
+              <strong>Company:</strong> {selectedJob.company}
+            </p>
+            <p>
+              <strong>Location:</strong> {selectedJob.location}
+            </p>
+            <p>
+              <strong>Description:</strong> {selectedJob.description}
+            </p>
+            {selectedJob.salary && (
+              <p>
+                <strong>Salary:</strong> ${selectedJob.salary}
+              </p>
+            )}
 
             <div className="modal-icons">
               <Star
                 size={18}
-                className={favorites.has(selectedJob._id) ? "job-icon favorite active" : "job-icon favorite"}
+                className={
+                  favorites.has(selectedJob._id)
+                    ? "job-icon favorite active"
+                    : "job-icon favorite"
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleFavorite(selectedJob._id);
@@ -230,7 +280,11 @@ const JobList = () => {
               />
               <Eye
                 size={18}
-                className={watchList.has(selectedJob._id) ? "job-icon watchlist active" : "job-icon watchlist"}
+                className={
+                  watchList.has(selectedJob._id)
+                    ? "job-icon watchlist active"
+                    : "job-icon watchlist"
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWatchlist(selectedJob._id);
@@ -238,7 +292,11 @@ const JobList = () => {
               />
               <CheckCircle
                 size={18}
-                className={appliedJobs.has(selectedJob._id) ? "job-icon applied active" : "job-icon applied"}
+                className={
+                  appliedJobs.has(selectedJob._id)
+                    ? "job-icon applied active"
+                    : "job-icon applied"
+                }
                 onClick={(e) => {
                   e.stopPropagation();
                   handleApply(selectedJob._id);
