@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import GlassTextField from "../ui/GlassTextField";
 import { registerUser } from "../../utils/api"; // ✅ Use the API helper
-import "../../styles/Forms.css"; // ✅ Consistent styling
+import "../../styles/forms.css"; // ✅ Consistent styling
 
 // ✅ Yup Validation Schema
 const candidateSchema = Yup.object().shape({

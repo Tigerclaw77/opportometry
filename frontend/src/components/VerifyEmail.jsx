@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Container, Paper, Typography, CircularProgress, Button } from "@mui/material";
 import { verifyEmail } from "../utils/api"; // ✅ Use centralized API
-import "../styles/Forms.css";
+import "../styles/forms.css";
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();

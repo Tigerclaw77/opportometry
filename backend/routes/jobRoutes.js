@@ -6,32 +6,72 @@ const {
   searchJobs,
   seedJobs,
   updateJob,
-  deleteJob,
-  getRecruiterJobs,   // ✅ Add this controller method
+  archiveJob,
+  getRecruiterJobs,
 } = require("../controllers/jobController");
 
-const { verifyUserRole, checkJobOwnership } = require("../middleware/verifyUserRole");
+const {
+  verifyUserRole,
+  checkJobOwnership,
+} = require("../middleware/verifyUserRole");
 
-// ✅ Public Route - Get/Search Jobs
+/**
+ * ✅ Public Route — Search Jobs
+ * Accessible by all users
+ */
 router.get("/", searchJobs);
 
-// ✅ Recruiter-Specific Route ➜ Show Recruiter Jobs (Recruiters + Admin)
+/**
+ * ✅ Recruiter Dashboard — View Own Jobs
+ * Accessible to recruiter and admin roles
+ */
 router.get(
   "/recruiter",
-  verifyUserRole(["recruiter", "premiumrecruiter", "admin"]),
+  verifyUserRole(["recruiter", "admin"]),
   getRecruiterJobs
 );
 
-// ✅ Post a New Job (Recruiters Only)
-router.post("/", verifyUserRole("recruiter"), postJob);
+/**
+ * ✅ Post a New Job
+ * Recruiters and admins only
+ */
+router.post(
+  "/",
+  verifyUserRole(["recruiter", "admin"]),
+  postJob
+);
 
-// ✅ Seed Jobs (Admins Only)
-router.post("/seed", verifyUserRole("admin"), seedJobs);
+/**
+ * ✅ Seed Sample Jobs
+ * Admin-only route
+ */
+router.post(
+  "/seed",
+  verifyUserRole("admin"),
+  seedJobs
+);
 
-// ✅ Update a Job (Recruiters or Admin, but must own if recruiter)
-router.put("/:jobId", verifyUserRole("recruiter"), checkJobOwnership, updateJob);
+/**
+ * ✅ Update Existing Job
+ * Recruiters can only update their own jobs
+ * Admins can override
+ */
+router.put(
+  "/:jobId",
+  verifyUserRole(["recruiter", "admin"]),
+  checkJobOwnership,
+  updateJob
+);
 
-// ✅ Delete a Job (Recruiters or Admin, but must own if recruiter)
-router.delete("/:jobId", verifyUserRole("recruiter"), checkJobOwnership, deleteJob);
+/**
+ * ✅ Archive Job (soft delete)
+ * Same access logic as update
+ */
+router.put(
+  "/:jobId/archive",
+  verifyUserRole(["recruiter", "admin"]),
+  checkJobOwnership,
+  archiveJob
+);
 
 module.exports = router;

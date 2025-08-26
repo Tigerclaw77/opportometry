@@ -1,260 +1,146 @@
-/* Ensure full box-sizing to prevent unwanted margin/padding conflicts */
-*,
-*::before,
-*::after {
+/* Box sizing reset */
+*, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
+/* Body base styles */
 body {
   margin: 0;
-  padding: 0;
-  font-family: "Arial", sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  font-family: 'Segoe UI', sans-serif;
+  background: #121212;
+  color: #fff;
 }
 
-/* Main job list container */
+/* Container for job list */
 .job-list {
-  padding: 20px;
+  padding: 2rem;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center the job cards container */
-  gap: 20px; /* Add spacing between the title and the job cards */
   width: 100%;
 }
 
-h2 {
+/* Section heading */
+.job-list h2 {
   font-size: 2rem;
-  color: aliceblue;
-  margin-bottom: 20px;
-  width: 100%; /* Ensure the title stretches across the available width */
+  margin-bottom: 1rem;
+  color: #f0f0f0;
 }
 
-/* Job cards container (grid) */
+/* Grid layout for cards */
 .job-cards {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(280px, 1fr)
-  ); /* Make the grid responsive */
-  gap: 20px;
-  width: 100%; /* Ensure it uses full width */
-  padding: 0; /* Remove any default padding */
-  margin: 0; /* Reset any margin */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
 /* Job card styling */
 .job-card {
-  background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
-  border-radius: 15px; /* Rounded corners */
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: auto;
-  width: 100%; /* Allow the card to take up full available width */
-  position: relative; /* Ensure elements inside don't overflow */
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Ensure the background image is set correctly */
+.job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Optional background image layer */
 .job-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("https://source.unsplash.com/random/800x600") no-repeat center
-    center/cover;
-  opacity: 0.3;
-  border-radius: 15px;
-  z-index: -1; /* Behind the content */
+  inset: 0;
+  background: url("https://source.unsplash.com/random/800x600") center/cover no-repeat;
+  opacity: 0.2;
+  z-index: -1;
+  border-radius: 16px;
 }
 
-.job-card.highlighted {
-  outline: 5px solid #2196f3 !important;  /* Thicker outline */
-  box-shadow: 0 0 20px rgba(33, 150, 243, 1) !important;  /* Stronger box shadow */
-  background-color: #e3f2fd !important;  /* Lighter background for contrast */
-  transform: scale(1.1) !important;  /* More noticeable scale */
-  animation: pulse 0.8s ease-in-out;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1.1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1.1); }
-}
-
-/* Text inside the job card */
+/* Headings and text */
 .job-card h3 {
-  color: aliceblue;
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
 }
 
 .job-card p {
-  font-size: 1rem;
-  color: #ccc;
+  font-size: 0.95rem;
+  color: #fff;
+  margin: 0.25rem 0;
 }
 
-.job-card button {
-  background: rgba(
-    0,
-    123,
-    255,
-    0.7
-  ); /* Translucent blue background for buttons */
-  border: none;
-  padding: 10px 20px;
-  color: white;
-  font-size: 1rem;
-  border-radius: 8px;
+/* Icon positioning */
+.job-icon-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.job-icon {
+  color: #aaa;
   cursor: pointer;
-  transition: background 0.3s ease;
-  margin-top: 10px;
+  transition: color 0.2s ease;
 }
 
-.job-card button:hover {
-  background: rgba(0, 123, 255, 1); /* Solid blue on hover */
+.job-icon.favorite.active,
+.job-icon.favorite:hover {
+  color: gold;
 }
 
-/* Dark Mode Adjustments */
-body.dark-mode .job-card {
-  background: rgba(30, 30, 30, 0.8); /* Darker background */
-  color: var(--text-color-dark);
+.job-icon.applied.active,
+.job-icon.applied:hover {
+  color: #00c853;
 }
 
-body.dark-mode .job-card::before {
-  opacity: 0.5; /* Darker opacity for dark mode */
-}
-
-body.dark-mode .job-card button {
-  background: rgba(0, 123, 255, 0.9); /* Darker button */
-}
-
-body.dark-mode .job-card button:hover {
-  background: rgba(0, 123, 255, 1); /* Solid button color on hover */
-}
-
-/* Modal Overlay */
+/* Modal overlay */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 0; /* Hidden by default */
-  visibility: hidden; /* Ensure it's non-interactive */
-  transition: opacity 0.5s ease, visibility 0s 0.5s; /* Smooth fade-in */
+  z-index: 1000;
 }
 
-/* When the modal is active, fade it in */
-.modal-overlay.active {
-  opacity: 1; /* Make it visible */
-  visibility: visible; /* Make it interactive */
-  transition: opacity 0.5s ease, visibility 0s; /* Remove delay */
-}
-
-/* Modal Content */
 .modal-content {
-  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
-  border-radius: 20px;
-  padding: 20px;
+  background: rgba(30, 30, 30, 0.95);
+  color: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
   width: 90%;
   max-width: 600px;
-  color: #fff;
-  text-align: left;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  opacity: 0; /* Start hidden */
-  transform: translateY(-30px); /* Slide in from top */
-  transition: opacity 0.5s ease, transform 0.5s ease; /* Animate both */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
 }
 
 .modal-content h2 {
+  margin-top: 0;
   font-size: 1.8rem;
-  margin-bottom: 10px;
 }
 
 .modal-content p {
+  margin: 0.75rem 0;
   font-size: 1.1rem;
-  margin: 5px 0;
 }
 
 .modal-content button {
-  background: rgba(0, 123, 255, 0.8); /* Button with translucent background */
-  border-radius: 8px;
-  padding: 10px 20px;
-  margin-top: 20px;
-  font-size: 1rem;
+  margin-top: 1.5rem;
+  background: #007bff;
   color: white;
-  transition: background 0.3s ease;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .modal-content button:hover {
-  background: rgba(0, 123, 255, 1); /* Solid color on hover */
-}
-
-/* When modal content is active, fade and slide it in */
-.modal-overlay.active .modal-content {
-  opacity: 1; /* Fade in */
-  transform: translateY(0); /* Slide into place */
-}
-
-.tooltip-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.tooltip {
-  visibility: hidden;
-  background-color: black;
-  color: white;
-  text-align: left;
-  padding: 5px 8px;
-  border-radius: 4px;
-  position: absolute;
-  left: 50%;
-  bottom: 0%;
-  transform: translateX(30%);
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.favorite-tooltip {
-  left: 2px; /* ✅ Adjust this value as needed */
-  text-align: left;
-  width: max-content;
-}
-
-/* Default left-aligned tooltips */
-.left-align-tooltip {
-  left: 0;
-  text-align: left;
-}
-
-/* Applied tooltips moved slightly right for better alignment */
-.applied-tooltip {
-  left: 5px; /* ✅ Adjust this value as needed */
-  text-align: left;
-  width: max-content;
-}
-
-.tooltip-wrapper:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
+  background: #0056b3;
 }

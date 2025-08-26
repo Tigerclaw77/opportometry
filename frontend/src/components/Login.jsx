@@ -6,6 +6,7 @@ import { loginUser } from "../utils/api";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../store/authSlice";
+import { fetchUserJobData } from "../store/jobSlice";
 import GlassTextField from "../components/ui/GlassTextField";
 import {
   Button,
@@ -16,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import "../styles/Forms.css";
+import "../styles/forms.css";
 
 // ✅ Yup validation schema
 const loginSchema = Yup.object().shape({
@@ -48,31 +49,58 @@ const Login = () => {
   const rememberMe = watch("rememberMe", false);
 
   const onSubmit = async (data) => {
-    console.log("🟢 Submitting login:", data);
     setFormError("");
 
     try {
-      // Step 1: Log in and get full response
-      const { token, userRole, redirect, user } = await loginUser(data.email, data.password);
+      // Step 1: Send login request to backend
+      const response = await loginUser(data.email, data.password);
+      console.log("🧾 Full login response:", response);
 
-      // ✅ Step 2: Save to Redux
+      const { token, userRole, redirect, user } = response;
+
+      console.log("🔍 Received user from backend:", {
+        email: user.email,
+        isVerified: user.isVerified,
+        type: typeof user.isVerified,
+      });
+
+      // Step 2: Check email verification
+      if (!user.isVerified) {
+        console.warn("⚠️ User not verified. Redirecting to email verification.");
+        return navigate("/email-verification", {
+          state: { reason: "unverified-login" },
+        });
+      }
+
+      // Step 3: Save user to Redux store
       dispatch(login({ token, userRole, user }));
 
-      // ✅ Step 3: Save raw user object to localStorage (not nested)
-      localStorage.setItem("token", token);
-      localStorage.setItem("userRole", userRole);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Step 4: Sync job interactions
+      dispatch(
+        fetchUserJobData({
+          savedJobs: user.savedJobs || [],
+          appliedJobs: user.appliedJobs || [],
+          recruiterJobs: user.recruiterJobs || [],
+          hiddenJobs: user.hiddenJobs || [],
+        })
+      );
 
-      // ✅ Step 4: Navigate
+      // Step 5: Navigate to dashboard
       navigate(redirect);
     } catch (error) {
-      console.error("🔴 Backend error response:", error.message);
+      console.error("🔴 Backend error caught in login:", error);
 
-      const { fieldErrors, message } = error;
+      // Log full Axios response if it exists
+      if (error.response) {
+        console.error("📬 Axios error response data:", error.response.data);
+        console.error("📦 Axios error response status:", error.response.status);
+        console.error("📨 Axios error response headers:", error.response.headers);
+      }
+
+      const { fieldErrors, message } = error.response?.data || {};
 
       if (fieldErrors) {
         Object.entries(fieldErrors).forEach(([field, msg]) => {
-          console.log(`⚠️ Setting error for ${field}: ${msg}`);
           setError(field, { type: "manual", message: msg });
         });
       }
@@ -94,13 +122,7 @@ const Login = () => {
           </Typography>
         )}
 
-        <form
-          onSubmit={handleSubmit((data) => {
-            console.log("✅ Form passed validation:", data);
-            onSubmit(data);
-          })}
-          noValidate
-        >
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <GlassTextField
             label="Email"
             type="email"

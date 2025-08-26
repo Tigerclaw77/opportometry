@@ -1,123 +1,114 @@
 import React, { useState, useEffect } from "react";
 import {
   fetchRecruiterJobs,
-  deleteJob,
-  migrateRecruiterJobTemplates
+  archiveJob,
+  migrateRecruiterJobTemplates,
 } from "../../utils/api";
+import { useDispatch } from "react-redux";
+
 import AddJob from "./AddJob";
+import AccessGate from "../auth/AccessGate";
+import JobTabs from "./JobTabs";
 
 const RecruiterDashboard = () => {
-  const [jobs, setJobs] = useState([]);
-  const [archivedJobs, setArchivedJobs] = useState([]);
-  const [editingJob, setEditingJob] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const dispatch = useDispatch();
 
-  // ✅ Fetch only jobs created by the logged-in recruiter
+  const [categorizedJobs, setCategorizedJobs] = useState({
+    active: [],
+    archived: [],
+    featured: [],
+    expired: [],
+  });
+
+  const [editingJob, setEditingJob] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
   const getRecruiterJobs = async () => {
     try {
-      const recruiterJobs = await fetchRecruiterJobs(); // Now using centralized API
-      console.log("✅ Recruiter Jobs Fetched:", recruiterJobs);
+      const jobs = await fetchRecruiterJobs();
 
-      // Separate active and archived jobs
-      const activeJobs = recruiterJobs.filter(job => job.status === "open");
-      const archived = recruiterJobs.filter(job => job.status !== "open");
+      const active = jobs.filter((job) => job.status === "open" && !job.isExpired);
+      const archived = jobs.filter((job) => job.status === "archived");
+      const featured = jobs.filter((job) => job.featured === true);
+      const expired = jobs.filter((job) => job.isExpired === true);
 
-      setJobs(activeJobs);
-      setArchivedJobs(archived);
+      setCategorizedJobs({ active, archived, featured, expired });
     } catch (error) {
       console.error("❌ Error fetching recruiter jobs:", error.message);
     }
   };
 
-  const handleDelete = async (jobId) => {
+  const handleEdit = (job) => {
+    setEditingJob(job);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleArchive = async (jobId) => {
+    const confirm = window.confirm("Are you sure you want to archive this job?");
+    if (!confirm) return;
+
     try {
-      await deleteJob(jobId); // ✅ Using centralized delete function
-      getRecruiterJobs();     // ✅ Refresh job list after delete
-      alert("Job deleted successfully!");
+      await archiveJob(jobId);
+      getRecruiterJobs();
+      alert("Job archived successfully!");
     } catch (error) {
-      console.error("❌ Error deleting job:", error.message);
-      alert("Failed to delete job");
+      console.error("❌ Error archiving job:", error.message);
+      alert("Failed to archive job.");
     }
   };
 
-  const handleEdit = (job) => {
-    setEditingJob(job);
-  };
-
-  useEffect(() => {
-    getRecruiterJobs();
-  }, []);
-
-  // ✅ Search Functionality
-  const filteredJobs = jobs.filter(job =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // ✅ Job Template Migration (Convert Job Templates into Jobs)
   const handleMigrateTemplates = async () => {
     try {
-      await migrateRecruiterJobTemplates(); // ✅ Centralized function
+      await migrateRecruiterJobTemplates();
       alert("Job templates migrated successfully!");
-      getRecruiterJobs(); // ✅ Refresh job list
+      getRecruiterJobs();
     } catch (error) {
       console.error("❌ Error migrating job templates:", error.message);
       alert("Failed to migrate job templates");
     }
   };
 
+  useEffect(() => {
+    getRecruiterJobs();
+  }, []);
+
   return (
-    <div className="recruiter-dashboard-container">
-      <h1>Recruiter Dashboard</h1>
+    <AccessGate allowedRoles={["recruiter", "admin"]}>
+      <div className="recruiter-dashboard-container">
+        <h1>Recruiter Dashboard</h1>
 
-      {/* ✅ Add or Edit Job Form */}
-      <AddJob jobToEdit={editingJob} onSuccess={getRecruiterJobs} />
+        {!showForm ? (
+          <button onClick={() => setShowForm(true)}>➕ Add New Job</button>
+        ) : (
+          <>
+            <AddJob
+              jobToEdit={editingJob}
+              onSuccess={() => {
+                setShowForm(false);
+                setEditingJob(null);
+                getRecruiterJobs();
+              }}
+            />
+            <button onClick={() => { setShowForm(false); setEditingJob(null); }}>
+              Cancel
+            </button>
+          </>
+        )}
 
-      {/* ✅ Search Bar */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Search jobs..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+        <JobTabs
+          jobsByStatus={categorizedJobs}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
         />
-      </div>
 
-      {/* ✅ Active Jobs */}
-      <h2>Your Active Jobs</h2>
-      {filteredJobs.length > 0 ? (
-        filteredJobs.map((job) => (
-          <div key={job._id} className="job-card">
-            <h3>{job.title}</h3>
-            <p>{job.description}</p>
-            <div className="job-actions">
-              <button onClick={() => handleEdit(job)}>Edit</button>
-              <button onClick={() => handleDelete(job._id)}>Delete</button>
-            </div>
+        <AccessGate allowedTiers={["premiumrecruiter", "admin"]}>
+          <div style={{ marginTop: "30px" }}>
+            <button onClick={handleMigrateTemplates}>Migrate Job Templates</button>
           </div>
-        ))
-      ) : (
-        <p>No active jobs found</p>
-      )}
-
-      {/* ✅ Archived Jobs */}
-      <h2>Archived Jobs</h2>
-      {archivedJobs.length > 0 ? (
-        archivedJobs.map((job) => (
-          <div key={job._id} className="job-card archived">
-            <h3>{job.title}</h3>
-            <p>{job.description}</p>
-          </div>
-        ))
-      ) : (
-        <p>No archived jobs found</p>
-      )}
-
-      {/* ✅ Migrate Job Templates Button */}
-      <div style={{ marginTop: "30px" }}>
-        <button onClick={handleMigrateTemplates}>Migrate Job Templates</button>
+        </AccessGate>
       </div>
-    </div>
+    </AccessGate>
   );
 };
 

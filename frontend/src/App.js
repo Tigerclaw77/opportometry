@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { login, logout } from "./store/authSlice";
-import {
-  fetchNotifications,
-  clearNotifications,
-} from "./store/notificationsSlice";
+
+import { fetchUserSession } from "./store/authSlice";
+import { fetchNotifications, clearNotifications } from "./store/notificationsSlice";
+import { fetchUserJobData } from "./store/jobSlice";
 
 import Login from "./components/Login";
 import Logout from "./components/Logout";
@@ -22,7 +21,7 @@ import AdminProfile from "./components/Admin/AdminProfile";
 import Profile from "./components/Profile";
 import CandidateDashboard from "./components/Candidate/CandidateDashboard";
 import SearchJobs from "./components/Candidate/SearchJobs";
-import JobList from "./components/JobList";
+import JobList from "./components/JobSearch/JobList";
 import CheckYourEmail from "./components/CheckYourEmail";
 import VerifyEmail from "./components/VerifyEmail";
 import ForgotPassword from "./components/ForgotPassword";
@@ -33,35 +32,36 @@ import EditJob from "./components/Recruiter/EditJob";
 import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
 import Footer from "./components/Footer";
-
 import RoleSwitcher from "./components/RoleSwitcher";
 
-import { ThemeProvider } from "@mui/material/styles";
-import theme from "./theme";
-
 import "./styles.css";
-import "./styles/Forms.css";
+import "./styles/forms.css";
 
 function App() {
   const dispatch = useDispatch();
 
-  // ✅ Restore auth and notifications on page load
+  // Session + notifications bootstrap
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.token && storedUser?.userRole && storedUser?.user) {
-      dispatch(
-        login({
-          token: storedUser.token,
-          userRole: storedUser.userRole,
-          user: storedUser.user,
-        })
-      );
-      dispatch(fetchNotifications()); // ✅ Load notifications on login
-      console.log("✅ Rehydrated user and notifications from localStorage");
-    } else {
-      dispatch(logout()); // ✅ Cleanup if invalid user
-      dispatch(clearNotifications());
-    }
+    dispatch(fetchUserSession())
+      .unwrap()
+      .then((res) => {
+        if (res?.user) {
+          dispatch(fetchNotifications());
+          dispatch(
+            fetchUserJobData({
+              savedJobs: res.user.savedJobs || [],
+              appliedJobs: res.user.appliedJobs || [],
+              recruiterJobs: res.user.recruiterJobs || [],
+              hiddenJobs: res.user.hiddenJobs || [],
+            })
+          );
+        } else {
+          dispatch(clearNotifications());
+        }
+      })
+      .catch(() => {
+        dispatch(clearNotifications());
+      });
   }, [dispatch]);
 
   return (
@@ -85,9 +85,7 @@ function App() {
             <Route
               path="/profile"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["admin", "recruiter", "candidate"]}
-                >
+                <ProtectedRoute allowedUserRoles={["admin", "recruiter", "candidate"]}>
                   <Profile />
                 </ProtectedRoute>
               }
@@ -120,16 +118,11 @@ function App() {
             />
 
             {/* Recruiter Routes */}
-            <Route
-              path="/recruiter/register"
-              element={<RecruiterRegistration />}
-            />
+            <Route path="/recruiter/register" element={<RecruiterRegistration />} />
             <Route
               path="/recruiter/dashboard"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["recruiter", "premiumrecruiter"]}
-                >
+                <ProtectedRoute allowedUserRoles={["recruiter", "admin"]}>
                   <RecruiterDashboard />
                 </ProtectedRoute>
               }
@@ -137,7 +130,7 @@ function App() {
             <Route
               path="/recruiter/profile"
               element={
-                <ProtectedRoute allowedUserRoles={["recruiter"]}>
+                <ProtectedRoute allowedUserRoles={["recruiter", "admin"]}>
                   <RecruiterProfile />
                 </ProtectedRoute>
               }
@@ -145,9 +138,7 @@ function App() {
             <Route
               path="/recruiter/addjob"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["recruiter", "premiumrecruiter", "admin"]}
-                >
+                <ProtectedRoute allowedUserRoles={["recruiter", "admin"]}>
                   <AddJob />
                 </ProtectedRoute>
               }
@@ -155,25 +146,18 @@ function App() {
             <Route
               path="/recruiter/editjob/:jobId"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["recruiter", "premiumrecruiter"]}
-                >
+                <ProtectedRoute allowedUserRoles={["recruiter", "admin"]}>
                   <EditJob />
                 </ProtectedRoute>
               }
             />
 
             {/* Candidate Routes */}
-            <Route
-              path="/candidate/register"
-              element={<CandidateRegistration />}
-            />
+            <Route path="/candidate/register" element={<CandidateRegistration />} />
             <Route
               path="/candidate/dashboard"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["candidate", "premiumcandidate"]}
-                >
+                <ProtectedRoute allowedUserRoles={["candidate", "admin"]}>
                   <CandidateDashboard />
                 </ProtectedRoute>
               }
@@ -181,7 +165,7 @@ function App() {
             <Route
               path="/candidate/profile"
               element={
-                <ProtectedRoute allowedUserRoles={["candidate"]}>
+                <ProtectedRoute allowedUserRoles={["candidate", "admin"]}>
                   <CandidateProfile />
                 </ProtectedRoute>
               }
@@ -189,13 +173,13 @@ function App() {
             <Route
               path="/search-jobs"
               element={
-                <ProtectedRoute
-                  allowedUserRoles={["candidate", "premiumcandidate"]}
-                >
+                <ProtectedRoute allowedUserRoles={["candidate", "admin"]}>
                   <SearchJobs />
                 </ProtectedRoute>
               }
             />
+
+            {/* Shared Notifications */}
             <Route
               path="/notifications"
               element={

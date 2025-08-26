@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { resetPasswordRequest } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { Button, Paper, Container, Typography } from "@mui/material";
-import "../styles/Forms.css";
+import "../styles/forms.css";
 import GlassTextField from "./ui/GlassTextField";
 
 // ✅ Validation schema

@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { resetPassword } from "../utils/api"; // ✅ NEW IMPORT
 import { Button, Paper, Container, Typography } from "@mui/material";
 import GlassTextField from "./ui/GlassTextField";
-import "../styles/Forms.css";
+import "../styles/forms.css";
 
 // ✅ Validation schema
 const resetPasswordSchema = Yup.object().shape({

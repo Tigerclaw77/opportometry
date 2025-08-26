@@ -14,7 +14,7 @@ import {
 
 import GlassTextField from "../ui/GlassTextField";
 import { registerUser } from "../../utils/api"; // ✅ Using centralized API calls
-import "../../styles/Forms.css";
+import "../../styles/forms.css";
 
 // ✅ Yup Validation Schema
 const recruiterSchema = Yup.object().shape({

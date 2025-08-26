@@ -4,52 +4,50 @@ require("dotenv").config();
 
 /**
  * ✅ General Auth Middleware (Validates JWT and sets req.user)
+ * Used for basic user session validation (e.g., /auth/me)
  */
 const verifyUser = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    console.log("🔴 No token provided.");
-    return res.status(401).json({ message: "Authentication token is required" });
+    return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded._id) {
-      console.log("🔴 Invalid token payload: missing _id");
+
+    if (!decoded._id || !decoded.userRole) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
 
-    req.user = decoded; // contains _id and userRole
-    console.log("🟢 verifyUser: User verified:", decoded);
+    req.user = {
+      _id: decoded._id,
+      userRole: decoded.userRole,
+      tier: decoded.tier || "free",
+    };
+
     next();
   } catch (error) {
-    console.log("🔴 verifyUser: JWT error:", error.message);
-    return res.status(401).json({ message: "Invalid or expired token" });
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
 /**
- * ✅ Role-based Middleware (Checks userRole)
+ * ✅ Role-based Middleware (Checks userRole + handles dev override)
  */
 const verifyUserRole = (requiredUserRole) => {
   return (req, res, next) => {
-    console.log("🔹 verifyUserRole middleware executing...");
-    console.log("🔹 NODE_ENV:", process.env.NODE_ENV);
-
-    // ✅ Dev mode override
     if (process.env.NODE_ENV === "development") {
       req.user = {
-        _id: "67ccb98f866cbc48ae78d3e0", // mock _id
-        userRole: "admin"
+        _id: "67ccb98f866cbc48ae78d3e0",
+        userRole: "admin",
+        tier: "premium",
       };
-      console.log("🛠️ Dev mode override in verifyUserRole");
       return next();
     }
 
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
-      console.log("🔴 No token provided.");
       return res.status(401).json({ message: "Authentication token is required" });
     }
 
@@ -57,36 +55,39 @@ const verifyUserRole = (requiredUserRole) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       if (!decoded._id || !decoded.userRole) {
-        console.log("🔴 Invalid token payload:", decoded);
-        return res.status(401).json({ message: "Invalid token structure." });
+        return res.status(401).json({ message: "Invalid token structure" });
       }
 
-      console.log(`🟢 Token valid: _id ${decoded._id}, userRole ${decoded.userRole}`);
+      const userRole = decoded.userRole;
+      const userTier = decoded.tier || "free";
 
       if (
         requiredUserRole &&
         (
-          (Array.isArray(requiredUserRole) && !requiredUserRole.includes(decoded.userRole)) ||
-          (!Array.isArray(requiredUserRole) && decoded.userRole !== requiredUserRole)
+          (Array.isArray(requiredUserRole) && !requiredUserRole.includes(userRole)) ||
+          (!Array.isArray(requiredUserRole) && userRole !== requiredUserRole)
         )
       ) {
-        console.log(`🔴 userRole mismatch. Required: ${requiredUserRole}, Found: ${decoded.userRole}`);
         return res.status(403).json({
-          message: `Access denied. Requires ${requiredUserRole} userRole.`,
+          message: `Access denied. Requires ${requiredUserRole} role.`,
         });
       }
 
-      req.user = decoded;
+      req.user = {
+        _id: decoded._id,
+        userRole,
+        tier: userTier,
+      };
+
       next();
     } catch (error) {
-      console.log("🔴 JWT verification error:", error.message);
       return res.status(401).json({ message: "Invalid or expired token" });
     }
   };
 };
 
 /**
- * ✅ Job Ownership Middleware (for recruiters)
+ * ✅ Job Ownership Middleware (for recruiters only)
  */
 const checkJobOwnership = async (req, res, next) => {
   try {
@@ -98,19 +99,15 @@ const checkJobOwnership = async (req, res, next) => {
     }
 
     if (req.user.userRole === "admin") {
-      console.log(`🟢 Admin override for job ${jobId}`);
       return next();
     }
 
     if (job.createdBy.toString() !== req.user._id) {
-      console.log(`🔴 Recruiter ${req.user._id} does not own job ${jobId}`);
       return res.status(403).json({ message: "Unauthorized: You do not own this job." });
     }
 
-    console.log(`🟢 Recruiter ${req.user._id} owns job ${jobId}`);
     next();
   } catch (error) {
-    console.error("🚨 Error in checkJobOwnership:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -118,5 +115,5 @@ const checkJobOwnership = async (req, res, next) => {
 module.exports = {
   verifyUser,
   verifyUserRole,
-  checkJobOwnership
+  checkJobOwnership,
 };

@@ -17,7 +17,7 @@ router.get("/job-data", verifyUserRole("candidate"), async (req, res) => {
 
     res.json({
       favorites: user.savedJobs || [],  // or user.favoriteJobs if you rename
-      watchlistJobs: user.watchlistJobs || [],
+      // watchlistJobs: user.watchlistJobs || [],
       appliedJobs: user.appliedJobs || [],
     });
   } catch (error) {
@@ -29,42 +29,42 @@ router.get("/job-data", verifyUserRole("candidate"), async (req, res) => {
  * ✅ GET Watchlist Jobs
  * GET /api/candidate/watchlist
  */
-router.get("/watchlist", verifyUserRole("candidate"), async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).populate("watchlistJobs");
-    if (!user) return res.status(404).json({ message: "User not found" });
+// router.get("/watchlist", verifyUserRole("candidate"), async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id).populate("watchlistJobs");
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json(user.watchlistJobs);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch watchlist jobs", error: error.message });
-  }
-});
+//     res.json(user.watchlistJobs);
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to fetch watchlist jobs", error: error.message });
+//   }
+// });
 
 /**
  * ✅ Toggle Job in Watchlist
  * POST /api/candidate/watchlist/:jobId
  */
-router.post("/watchlist/:jobId", verifyUserRole("candidate"), async (req, res) => {
-  try {
-    const { jobId } = req.params;
-    const user = await User.findById(req.user.id);
+// router.post("/watchlist/:jobId", verifyUserRole("candidate"), async (req, res) => {
+//   try {
+//     const { jobId } = req.params;
+//     const user = await User.findById(req.user.id);
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const index = user.watchlistJobs.findIndex((id) => id.toString() === jobId);
+//     const index = user.watchlistJobs.findIndex((id) => id.toString() === jobId);
 
-    if (index >= 0) {
-      user.watchlistJobs.splice(index, 1);
-    } else {
-      user.watchlistJobs.push(jobId);
-    }
+//     if (index >= 0) {
+//       user.watchlistJobs.splice(index, 1);
+//     } else {
+//       user.watchlistJobs.push(jobId);
+//     }
 
-    await user.save();
-    res.json({ message: "Watchlist updated", watchlistJobs: user.watchlistJobs });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update watchlist", error: error.message });
-  }
-});
+//     await user.save();
+//     res.json({ message: "Watchlist updated", watchlistJobs: user.watchlistJobs });
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to update watchlist", error: error.message });
+//   }
+// });
 
 /**
  * ✅ Toggle Job in Favorites

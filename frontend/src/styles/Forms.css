@@ -1,200 +1,104 @@
-/* ✅ Glassmorphism Form Background */
-.glass-form {
-  background: rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(15px) saturate(160%) !important;
+/* forms.css — search, filters, tag inputs, buttons */
+
+.job-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 1rem;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 40px;
-  max-width: 95%;
-  margin: auto;
-  color: white !important;
-  animation: fadeInUp 0.8s ease-out;
+  margin-bottom: 1rem;
 }
 
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px); /* Slide up from 20px lower */
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0); /* End at original position */
-  }
+.job-filter input,
+.job-filter select {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  min-width: 160px;
+  font-size: 0.9rem;
 }
 
-/* ✅ Mobile-First: Make Inputs Full Width by Default */
-.glass-input .MuiOutlinedInput-root {
-  background: transparent !important;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  color: white !important;
-  width: 100% !important; /* ✅ Full width for mobile */
+.job-filter input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
-/* ✅ Ensure Job Description is Full Width */
-.glass-input.textarea .MuiOutlinedInput-root {
-  width: 100% !important;
-  min-height: 140px !important;
+.location-input-wrapper {
+  position: relative;
+  width: 250px;
 }
 
-/* ✅ Reduce Vertical Height for Single-Line Inputs */
-.glass-input.single-line .MuiOutlinedInput-root {
-  min-height: 36px !important;
-  padding: 6px !important;
+.location-input-wrapper input {
+  width: 100%;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
 }
 
-/* ✅ Input Label & Border Styling */
-.glass-input .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  background: transparent !important;
+.location-icon-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6ec5ff;
+  cursor: pointer;
+  font-size: 1.2rem;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.glass-input .MuiInputLabel-root {
-  color: white !important;
-  width: 100% !important;
+.location-icon-button:hover {
+  transform: translateY(-50%) scale(1.2);
+  color: #9df;
+  filter: drop-shadow(0 0 2px #9df);
 }
 
-/* ✅ Ensure Hover & Focus Effects Work */
-.glass-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(0, 123, 255, 0.7) !important;
+.clear-filters {
+  background: rgba(255, 100, 100, 1);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-/* ✅ Increase Vertical Spacing Between Form Elements */
-.form-group {
-  margin-bottom: 24px !important;
-}
-
-/* ✅ Compact Checkbox Groups */
-.checkbox-group {
+.tag-input-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  justify-content: flex-start;
-  color: white !important;
-}
-
-/* ✅ Ensure Checkbox Inputs Are White */
-.MuiCheckbox-root {
-  color: white !important;
-}
-
-/* ✅ Submit & Save Template Section */
-.form-actions {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 40px;
-  gap: 40px; /* ✅ Ensures proper spacing */
+  gap: 8px;
 }
 
-/* ✅ Save Template Moves Further Right */
-.template-save {
+.tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-  margin-left: auto; /* ✅ Push Save to Template further right */
+  gap: 6px;
 }
 
-/* ✅ Parent container: flex column by default (mobile first) */
-.submit-save-container {
-  display: flex;
-  flex-direction: column; /* ✅ Vertical stacking */
-  align-items: center;     /* ✅ Center items */
-  gap: 20px;
-}
-
-/* ✅ Template Name input wider on mobile */
-.template-name-input .MuiOutlinedInput-root {
-  width: 100% !important; /* ✅ Full width by default */
-}
-
-/* ✅ Button Styling */
-.glass-button {
-  background: rgba(0, 123, 255, 0.7) !important;
-  color: white !important;
-  padding: 12px 20px; /* ✅ Reduced vertical padding */
+.tag {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 4px 8px;
   border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  width: 100%; /* ✅ Full width for mobile */
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
 }
 
-/* ✅ Fix RecruiterRegistration Vertical Spacing */
-.register-form .MuiTextField-root {
-  margin-bottom: 16px !important;
-}
-
-/* .glass-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 1) !important;
-}
-
-.glass-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 1) !important;
-
-.glass-input .MuiInputLabel-root {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.glass-input .MuiInputLabel-root.Mui-focused {
-  color: rgba(255, 255, 255, 1) !important;
-} */
-
-
-/* ✅ Adjust Layout for Larger Screens */
-@media (min-width: 768px) {
-  .glass-form {
-    max-width: 800px;
-  }
-
-  /* ✅ Restore Width for Larger Screens */
-  .glass-input .MuiOutlinedInput-root {
-    width: 50% !important;
-  }
-
-  /* ✅ Ensure Job Description is Full Width */
-  .glass-input.textarea .MuiOutlinedInput-root {
-    width: 100% !important;
-  }
-
-  /* ✅ Adjust Button Width */
-  .glass-button {
-    width: auto !important;
-  }
-
-  .register-form .MuiOutlinedInput-root {
-    width: 100% !important; /* ✅ Forces full width on large screens */
-  }
-
-  .glass-input.half-width .MuiOutlinedInput-root {
-    width: 48% !important; /* Half-width, with some gap */
-  }
-
-  .glass-input.full-width .MuiOutlinedInput-root {
-    width: 100% !important;
-  }
-
-  .submit-save-container {
-    flex-direction: row;       /* ✅ Horizontal layout */
-    justify-content: flex-start;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .submit-job-button {
-    margin-right: 20px; /* ✅ Push button to the left by 20px */
-  }
-
-  .template-save {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px; /* ✅ Spacing between checkbox and input */
-  }
-
-  .template-name-input .MuiOutlinedInput-root {
-    width: 300px !important; /* ✅ Wider on larger screens */
-  }
+.tag button.remove-tag {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  margin-left: 4px;
+  cursor: pointer;
 }

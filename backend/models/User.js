@@ -25,6 +25,13 @@ const userSchema = new mongoose.Schema({
     default: "active",
   },
 
+  // ✅ Access Tier (global across platform)
+  tier: {
+    type: String,
+    enum: ["guest", "free", "paid", "premium"],
+    default: "free",
+  },
+
   // ✅ Email Verification
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String, default: null },
@@ -36,21 +43,48 @@ const userSchema = new mongoose.Schema({
     lastName: { type: String },
     updatedAt: { type: Date, default: Date.now },
 
+    // ✅ Job Alert Preferences
+    alertPreferences: {
+      keywords: [String],
+      location: {
+        city: String,
+        state: String,
+        coordinates: {
+          lat: Number,
+          lng: Number,
+        },
+        radiusMiles: Number,
+      },
+      sendEmail: { type: Boolean, default: true },
+      sendSMS: { type: Boolean, default: false },
+    },
+
     // Candidate-specific fields
-    jobRoles: [{
-      type: String,
-      enum: [
-        "Optometrist", "Ophthalmologist", "Optician",
-        "Office Manager", "Optometric Tech", "Ophthalmic Tech",
-        "Surgical Tech", "Scribe", "Front Desk/Reception", "Insurance/Billing"
-      ],
-      default: [],
-    }],
-    workPreference: [{
-      type: String,
-      enum: ["remote", "in-office", "hybrid"],
-      default: [],
-    }],
+    jobRoles: [
+      {
+        type: String,
+        enum: [
+          "Optometrist",
+          "Ophthalmologist",
+          "Optician",
+          "Office Manager",
+          "Optometric Tech",
+          "Ophthalmic Tech",
+          "Surgical Tech",
+          "Scribe",
+          "Front Desk/Reception",
+          "Insurance/Billing",
+        ],
+        default: [],
+      },
+    ],
+    workPreference: [
+      {
+        type: String,
+        enum: ["remote", "in-office", "hybrid"],
+        default: [],
+      },
+    ],
     availability: {
       type: String,
       enum: ["full-time", "part-time"],
@@ -62,7 +96,6 @@ const userSchema = new mongoose.Schema({
       default: null,
     },
     resume: { type: String, default: null },
-    tier: { type: Number, default: 0 },
 
     // Recruiter-specific fields
     recruiterType: {
@@ -77,14 +110,16 @@ const userSchema = new mongoose.Schema({
   // ✅ Job Interactions (candidates only)
   savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
   appliedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
-  watchlistJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
   favoriteJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
+  lastAlertSent: { type: Date, default: null },
 
   // ✅ Profile history for auditing
-  profileHistory: [{
-    profileData: { type: Object },
-    archivedAt: { type: Date, default: Date.now },
-  }],
+  profileHistory: [
+    {
+      profileData: { type: Object },
+      archivedAt: { type: Date, default: Date.now },
+    },
+  ],
 
   createdAt: { type: Date, default: Date.now },
 });
@@ -116,7 +151,18 @@ userSchema.methods.updateProfile = async function (newProfileData) {
       archivedAt: new Date(),
     });
   }
-  this.profile = { ...newProfileData, updatedAt: new Date() };
+
+  // Deep merge profile updates
+  this.profile = {
+    ...this.profile,
+    ...newProfileData,
+    alertPreferences: {
+      ...this.profile.alertPreferences,
+      ...newProfileData.alertPreferences,
+    },
+    updatedAt: new Date(),
+  };
+
   await this.save();
 };
 

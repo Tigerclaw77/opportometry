@@ -1,16 +1,11 @@
 import axios from "axios";
 
-// ✅ Dev Mode Flag (optional, no longer used)
-const isDevMode =
-  process.env.REACT_APP_DEV_MODE === "true" ||
-  localStorage.getItem("devMode") === "true";
-
-// ✅ Create Axios Instance
+// ✅ Base Axios instance (adjust baseURL as needed)
 const axiosInstance = axios.create({
   baseURL: "http://localhost:5000/api",
 });
 
-// ✅ Automatically attach token
+// ✅ Attach token to every request (if applicable)
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -23,7 +18,7 @@ axiosInstance.interceptors.request.use(
 );
 
 // =============================
-// ✅ AUTH ENDPOINTS
+// ✅ AUTH
 // =============================
 export const loginUser = async (email, password) => {
   const { data } = await axiosInstance.post("/auth/login", { email, password });
@@ -41,85 +36,103 @@ export const resetPasswordRequest = async (email) => {
 };
 
 export const resetPassword = async (token, newPassword) => {
-  const { data } = await axiosInstance.post("/auth/reset-password", {
-    token,
-    newPassword,
-  });
+  const { data } = await axiosInstance.post("/auth/reset-password", { token, newPassword });
   return data;
 };
 
 export const verifyEmail = async (token) => {
-  const response = await axiosInstance.get(`/auth/verify-email?token=${token}`);
-  return response.data;
-};
-
-// =============================
-// ✅ JOBS ENDPOINTS
-// =============================
-export const createJob = async (jobData) => {
-  try {
-    const response = await axiosInstance.post("/jobs", jobData);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error creating job:", error);
-    throw new Error(error.response?.data?.message || "Failed to create job.");
-  }
-};
-
-export const fetchRecruiterJobs = async () => {
-  const { data } = await axiosInstance.get("/jobs/recruiter");
-  return data;
-};
-
-export const deleteJob = async (jobId) => {
-  const { data } = await axiosInstance.delete(`/jobs/${jobId}`);
-  return data;
-};
-
-export const migrateRecruiterJobTemplates = async () => {
-  const { data } = await axiosInstance.post("/recruiters/migrate-job-templates");
-  return data;
-};
-
-export const fetchJobs = async () => {
-  const { data } = await axiosInstance.get("/jobs");
-  return data;
-};
-
-export const addJobToFavorites = async (jobId) => {
-  const { data } = await axiosInstance.post(`/candidate/favorites/${jobId}`);
-  return data;
-};
-
-export const toggleWatchlistJob = async (jobId) => {
-  const { data } = await axiosInstance.post(`/candidate/watchlist/${jobId}`);
-  return data;
-};
-
-export const applyToJob = async (jobId) => {
-  const { data } = await axiosInstance.post(`/candidate/apply/${jobId}`);
+  const { data } = await axiosInstance.get(`/auth/verify-email?token=${token}`);
   return data;
 };
 
 // =============================
-// ✅ ADMIN ENDPOINTS
+// ✅ JOBS
 // =============================
-export const fetchAdminDashboard = async () => {
-  try {
-    const response = await axiosInstance.get("/admin/dashboard");
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error in fetchAdminDashboard:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Failed to fetch admin dashboard data");
-  }
+// export const fetchJobs = async () => {
+//   const { data } = await axiosInstance.get("/jobs");
+//   return data;
+// };
+
+// export const fetchRecruiterJobs = async () => {
+//   const { data } = await axiosInstance.get("/jobs/recruiter");
+//   return data.data;
+// };
+
+// export const createJob = async (jobData) => {
+//   const { data } = await axiosInstance.post("/jobs", jobData);
+//   return data;
+// };
+
+// export const updateJob = async (jobId, jobData) => {
+//   const { data } = await axiosInstance.put(`/jobs/${jobId}`, jobData);
+//   return data;
+// };
+
+// export const archiveJob = async (jobId) => {
+//   const { data } = await axiosInstance.put(`/jobs/${jobId}/archive`);
+//   return data;
+// };
+
+// =============================
+// ✅ USER INTERACTIONS
+// =============================
+// export const applyToJob = async (jobId) => {
+//   const { data } = await axiosInstance.post(`/jobs/apply/${jobId}`);
+//   return data;
+// };
+
+// export const addJobToFavorites = async (jobId) => {
+//   const { data } = await axiosInstance.post(`/jobs/favorite/${jobId}`);
+//   return data;
+// };
+
+// export const getUserJobInteractions = async () => {
+//   const { data } = await axiosInstance.get("/users/interactions");
+//   return data;
+// };
+
+export const getHiddenJobs = async () => {
+  const { data } = await axiosInstance.get("/users/hidden");
+  return data;
+};
+
+export const hideJob = async (jobId) => {
+  const { data } = await axiosInstance.post(`/users/hide/${jobId}`);
+  return data;
+};
+
+export const unhideJob = async (jobId) => {
+  const { data } = await axiosInstance.delete(`/users/hide/${jobId}`);
+  return data;
+};
+
+export const updateUserProfile = async (profileUpdates) => {
+  const { data } = await axiosInstance.put("/profile", profileUpdates);
+  return data;
 };
 
 // =============================
-// ✅ NOTIFICATIONS ENDPOINT
+// ✅ NOTIFICATIONS
 // =============================
 export const fetchNotifications = async () => {
   const { data } = await axiosInstance.get("/notifications");
   return data.notifications || data;
+};
+
+// =============================
+// ✅ ADMIN
+// =============================
+export const fetchAdminDashboard = async () => {
+  const { data } = await axiosInstance.get("/admin/dashboard");
+  return data;
+};
+
+// =============================
+// ✅ RECRUITER UTILITIES
+// =============================
+export const migrateRecruiterJobTemplates = async () => {
+  const { data } = await axiosInstance.post("/recruiters/migrate-job-templates");
+  return data;
 };
 
 export default axiosInstance;
