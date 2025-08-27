@@ -63,7 +63,7 @@ const AddJob = ({ jobToEdit }) => {
       chainAffiliation: "",
       ownershipTrack: "",
       jobRoles: [],
-      tags: [],
+      tagIds: [],
     },
   });
 

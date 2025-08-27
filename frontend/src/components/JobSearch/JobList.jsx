@@ -1,23 +1,23 @@
 // REFACTORED JobList.jsx using modular components: JobCard, JobModal, JobMap, Pagination
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+
+// ✅ Candidate-facing jobs now use Supabase
 import {
   fetchJobs,
   addJobToFavorites,
   applyToJob,
   getUserJobInteractions,
 } from "../../utils/api.supabase";
+
 import JobFilter from "./JobFilter";
 import JobCard from "./JobCard";
 import JobModal from "./JobModal";
 import JobMap from "./JobMap";
 import Pagination from "./Pagination";
 import "../../styles/JobCard.css";
-
-// ✅ canonical tags + normalizer
-import { resolveJobTag } from "../../constants/jobTags";
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 const PAGE_SIZE = 10;
@@ -28,13 +28,11 @@ const JobList = () => {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [filters, setFilters] = useState({
     showFilters: false,
-    tagIds: [],           // ✅ canonical tag IDs
-    tagLogic: "and",      // "and" | "or"
+    searchTags: [],
+    tagLogic: "and",
     searchText: "",
     role: "",
     hours: "",
-    location: "",
-    type: "",
   });
   const [favorites, setFavorites] = useState(new Set());
   const [appliedJobs, setAppliedJobs] = useState(new Set());
@@ -47,87 +45,52 @@ const JobList = () => {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const debounceTimeout = useRef(null);
 
-  // --- Helpers ---------------------------------------------------------------
-
-  // Normalize any array of labels/ids -> canonical tag IDs (deduped)
-  const toCanonicalIds = (arr = []) => {
-    const out = [];
-    for (const t of arr) {
-      const id = resolveJobTag(t);
-      if (id && !out.includes(id)) out.push(id);
-    }
-    return out;
-  };
-
-  // Derive canonical tag IDs stored on each job (back-compat with old data)
-  const attachJobTagIds = (job) => {
-    // Prefer server-provided canonical tag_ids
-    if (Array.isArray(job.tag_ids) && job.tag_ids.length) {
-      return { ...job, _tagIds: toCanonicalIds(job.tag_ids) };
-    }
-    // Fallback: old label-based `tags`
-    if (Array.isArray(job.tags) && job.tags.length) {
-      return { ...job, _tagIds: toCanonicalIds(job.tags) };
-    }
-    // Last resort: try to infer nothing (don’t extract from text here)
-    return { ...job, _tagIds: [] };
-  };
-
-  // --- Default optometrist tag ----------------------------------------------
-  // If user hasn’t applied custom filters and hasn’t stored override, add it once.
+  // ✅ Ensure default filter for "optometrist"
   useEffect(() => {
     const hasCustomFilters =
-      (filters.tagIds && filters.tagIds.length > 0) ||
+      filters.searchTags.length > 0 ||
       filters.location ||
       filters.type ||
       filters.searchText ||
       filters.role ||
       filters.hours;
 
-    const alreadyStored = localStorage.getItem("defaultRoleFilterV2");
+    const alreadyStored = localStorage.getItem("defaultRoleFilter");
 
     if (!hasCustomFilters && !alreadyStored) {
-      localStorage.setItem("defaultRoleFilterV2", "optometrist");
+      const defaultTag = "optometrist";
+      localStorage.setItem("defaultRoleFilter", defaultTag);
       setFilters((prev) => ({
         ...prev,
-        tagIds: Array.from(new Set([...(prev.tagIds || []), "optometrist"])),
+        searchTags: [...(prev.searchTags || []), defaultTag],
       }));
     }
   }, [filters]);
 
-  // --- Initialize filters from URL ------------------------------------------
+  // ✅ Parse filters from URL params
   useEffect(() => {
     const initial = Object.fromEntries([...searchParams.entries()]);
     delete initial.page;
     delete initial.sort;
-
-    // accept either new `tagIds` or old `searchTags` in URL (back-compat)
-    const rawTagIds = (initial.tagIds || "").split(",").filter(Boolean);
-    const rawSearchTags = (initial.searchTags || "").split(",").filter(Boolean);
-    const canonical = toCanonicalIds(rawTagIds.length ? rawTagIds : rawSearchTags);
-
     setFilters({
       showFilters: false,
-      tagIds: canonical,
+      ...initial,
+      searchTags: initial.searchTags ? initial.searchTags.split(",") : [],
       tagLogic: initial.tagLogic || "and",
       searchText: initial.searchText || "",
       role: initial.role || "",
       hours: initial.hours || "",
-      location: initial.location || "",
-      type: initial.type || "",
     });
     setSort(searchParams.get("sort") || "newest");
   }, [searchParams]);
 
-  // --- Fetch jobs ------------------------------------------------------------
+  // ✅ Load jobs from Supabase
   useEffect(() => {
     const loadJobs = async () => {
       try {
-        const data = await fetchJobs();
-        // Attach canonical tag ids on client for filtering
-        const withIds = (Array.isArray(data) ? data : []).map(attachJobTagIds);
-        setJobs(withIds);
-        setFilteredJobs(withIds);
+        const { results } = await fetchJobs();
+        setJobs(results);
+        setFilteredJobs(results);
       } catch (error) {
         console.error("Error fetching jobs:", error.message);
       }
@@ -135,7 +98,7 @@ const JobList = () => {
     loadJobs();
   }, []);
 
-  // --- Load user interactions ------------------------------------------------
+  // ✅ Load interactions (favorites + applied)
   useEffect(() => {
     const fetchInteractions = async () => {
       if (!_id) return;
@@ -150,30 +113,24 @@ const JobList = () => {
     fetchInteractions();
   }, [_id]);
 
-  // --- Filtering + URL sync (debounced) -------------------------------------
+  // ✅ Apply filters (debounced)
   useEffect(() => {
     clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
       const {
         location = "",
         type = "",
-        tagIds = [],
+        searchTags = [],
         tagLogic = "and",
         searchText = "",
         role = "",
         hours = "",
       } = filters;
 
-      // Compute effective tag set (enforce default optometrist only if role not set)
-      const effectiveTagIds =
-        role || tagIds.includes("optometrist")
-          ? tagIds
-          : Array.from(new Set([...tagIds, "optometrist"]));
-
       let filtered = jobs.filter((job) => {
-        const lowerTitle = (job.title || "").toLowerCase();
-        const lowerCompany = (job.company || "").toLowerCase();
-        const lowerDescription = (job.description || "").toLowerCase();
+        const lowerTitle = job.title.toLowerCase();
+        const lowerCompany = job.company?.toLowerCase() || "";
+        const lowerDescription = job.description?.toLowerCase() || "";
 
         const matchesSearchText =
           !searchText ||
@@ -181,26 +138,24 @@ const JobList = () => {
           lowerCompany.includes(searchText.toLowerCase()) ||
           lowerDescription.includes(searchText.toLowerCase());
 
-        // ✅ Tag matching on canonical IDs stored at job._tagIds
-        const jobIds = Array.isArray(job._tagIds) ? job._tagIds : [];
         const matchesTags =
-          !effectiveTagIds.length ||
+          !searchTags.length ||
           (tagLogic === "and"
-            ? effectiveTagIds.every((id) => jobIds.includes(id))
-            : effectiveTagIds.some((id) => jobIds.includes(id)));
+            ? searchTags.every(
+                (tag) =>
+                  lowerTitle.includes(tag.toLowerCase()) ||
+                  lowerCompany.includes(tag.toLowerCase())
+              )
+            : searchTags.some(
+                (tag) =>
+                  lowerTitle.includes(tag.toLowerCase()) ||
+                  lowerCompany.includes(tag.toLowerCase())
+              ));
 
-        const matchesLocation =
-          !location ||
-          ((job.location || "").toLowerCase().includes(location.toLowerCase()) ||
-            // optional: city/state fields if present
-            (`${job.city || ""}, ${job.state || ""}`)
-              .toLowerCase()
-              .includes(location.toLowerCase()));
-
+        const matchesLocation = !location || job.location?.toLowerCase().includes(location.toLowerCase());
         const matchesType = !type || (job.type && job.type.toLowerCase() === type.toLowerCase());
         const matchesRole = !role || (job.role && job.role.toLowerCase() === role.toLowerCase());
-        const matchesHours =
-          !hours || (job.hours && job.hours.toLowerCase() === hours.toLowerCase());
+        const matchesHours = !hours || (job.hours && job.hours.toLowerCase() === hours.toLowerCase());
 
         return (
           matchesSearchText &&
@@ -213,9 +168,7 @@ const JobList = () => {
       });
 
       if (sort === "newest") {
-        filtered = filtered.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } else if (sort === "salary-high") {
         filtered = filtered.sort((a, b) => (b.salary || 0) - (a.salary || 0));
       } else if (sort === "salary-low") {
@@ -223,28 +176,20 @@ const JobList = () => {
       }
 
       setFilteredJobs(filtered);
-
-      // ✅ URL sync with canonical tags
       setSearchParams({
         ...filters,
-        tagIds: (filters.tagIds || []).join(","),
-        // keep legacy param empty to avoid confusion
-        searchTags: "",
+        searchTags: searchTags.join(","),
         tagLogic,
         sort,
         page: "1",
       });
-    }, 300);
+    }, 400);
   }, [filters, jobs, sort, setSearchParams]);
 
-  // --- Pagination ------------------------------------------------------------
-  const paginatedJobs = useMemo(
-    () => filteredJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [filteredJobs, page]
-  );
+  const paginatedJobs = filteredJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.ceil(filteredJobs.length / PAGE_SIZE);
 
-  // --- Actions ---------------------------------------------------------------
+  // ✅ Handle interactions
   const handleFavorite = async (jobId) => {
     if (!_id) return;
     try {
@@ -269,7 +214,6 @@ const JobList = () => {
     }
   };
 
-  // --- Render ----------------------------------------------------------------
   return (
     <div className="job-list">
       <h2>Available Jobs</h2>
@@ -280,13 +224,11 @@ const JobList = () => {
         onClear={() =>
           setFilters({
             showFilters: false,
-            tagIds: [],
+            searchTags: [],
             tagLogic: "and",
             searchText: "",
             role: "",
             hours: "",
-            location: "",
-            type: "",
           })
         }
       />
@@ -329,8 +271,7 @@ const JobList = () => {
         onPageChange={(newPage) => {
           setSearchParams({
             ...filters,
-            tagIds: (filters.tagIds || []).join(","),
-            searchTags: "",
+            searchTags: filters.searchTags.join(","),
             tagLogic: filters.tagLogic,
             sort,
             page: newPage.toString(),

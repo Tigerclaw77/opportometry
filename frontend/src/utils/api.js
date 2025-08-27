@@ -46,51 +46,13 @@ export const verifyEmail = async (token) => {
 };
 
 // =============================
-// ✅ JOBS
+// ✅ JOBS (Candidate jobs now handled in Supabase)
 // =============================
-// export const fetchJobs = async () => {
-//   const { data } = await axiosInstance.get("/jobs");
-//   return data;
-// };
-
-// export const fetchRecruiterJobs = async () => {
-//   const { data } = await axiosInstance.get("/jobs/recruiter");
-//   return data.data;
-// };
-
-// export const createJob = async (jobData) => {
-//   const { data } = await axiosInstance.post("/jobs", jobData);
-//   return data;
-// };
-
-// export const updateJob = async (jobId, jobData) => {
-//   const { data } = await axiosInstance.put(`/jobs/${jobId}`, jobData);
-//   return data;
-// };
-
-// export const archiveJob = async (jobId) => {
-//   const { data } = await axiosInstance.put(`/jobs/${jobId}/archive`);
-//   return data;
-// };
+// Leave jobs-related functions here commented out or deleted.
 
 // =============================
-// ✅ USER INTERACTIONS
+// ✅ USER INTERACTIONS (non-Supabase ones)
 // =============================
-// export const applyToJob = async (jobId) => {
-//   const { data } = await axiosInstance.post(`/jobs/apply/${jobId}`);
-//   return data;
-// };
-
-// export const addJobToFavorites = async (jobId) => {
-//   const { data } = await axiosInstance.post(`/jobs/favorite/${jobId}`);
-//   return data;
-// };
-
-// export const getUserJobInteractions = async () => {
-//   const { data } = await axiosInstance.get("/users/interactions");
-//   return data;
-// };
-
 export const getHiddenJobs = async () => {
   const { data } = await axiosInstance.get("/users/hidden");
   return data;
@@ -128,8 +90,28 @@ export const fetchAdminDashboard = async () => {
 };
 
 // =============================
-// ✅ RECRUITER UTILITIES
+// ✅ RECRUITER: Jobs CRUD (Axios)
 // =============================
+export const fetchRecruiterJobs = async () => {
+  const { data } = await axiosInstance.get("/jobs/recruiter");
+  return data?.data ?? data;
+};
+
+export const createJob = async (jobData) => {
+  const { data } = await axiosInstance.post("/jobs", jobData);
+  return data;
+};
+
+export const updateJob = async (jobId, jobData) => {
+  const { data } = await axiosInstance.put(`/jobs/${jobId}`, jobData);
+  return data;
+};
+
+export const archiveJob = async (jobId) => {
+  const { data } = await axiosInstance.put(`/jobs/${jobId}/archive`);
+  return data;
+};
+
 export const migrateRecruiterJobTemplates = async () => {
   const { data } = await axiosInstance.post("/recruiters/migrate-job-templates");
   return data;
