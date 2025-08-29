@@ -1,11 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+dotenv.config(); // Load environment variables
 const connectDB = require('./config/database');
 const cron = require('node-cron');
 const { billJobsMonthly } = require('./controllers/billingController'); // ✅ Billing engine
-
-dotenv.config(); // Load environment variables
 
 const app = express();
 const PORT = process.env.PORT || 5000;

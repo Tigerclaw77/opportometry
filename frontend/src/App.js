@@ -68,6 +68,7 @@ function App() {
     <Router>
       <div className="App">
         <Header />
+        <div className="bg-dimmer"></div>
         <div className="main-content">
           <Routes>
             {/* Public Routes */}

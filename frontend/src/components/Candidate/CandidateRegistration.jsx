@@ -3,60 +3,54 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Paper,
-  Typography,
-  Button
-} from "@mui/material";
+import { Container, Paper, Typography, Button } from "@mui/material";
 import GlassTextField from "../ui/GlassTextField";
-import { registerUser } from "../../utils/api"; // ✅ Use the API helper
-import "../../styles/forms.css"; // ✅ Consistent styling
+import { supabase } from "../../utils/supabaseClient";
+import "../../styles/forms.css";
 
-// ✅ Yup Validation Schema
+// Validation
 const candidateSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required."),
   lastName: Yup.string().required("Last name is required."),
-  email: Yup.string()
-    .email("Invalid email address.")
-    .required("Email is required."),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters.")
-    .required("Password is required."),
+  email: Yup.string().email("Invalid email address.").required("Email is required."),
+  password: Yup.string().min(6, "Password must be at least 6 characters.").required("Password is required."),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match.")
     .required("Please confirm your password."),
 });
 
-const CandidateRegistration = () => {
+export default function CandidateRegistration() {
   const navigate = useNavigate();
+  const base = window.location.origin;
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({
-    resolver: yupResolver(candidateSchema),
-  });
+  } = useForm({ resolver: yupResolver(candidateSchema) });
 
   const onSubmit = async (data) => {
     try {
-      const payload = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+      const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        userRole: "candidate", // ✅ Explicitly set userRole
-      };
+        options: {
+          emailRedirectTo: `${base}/verify-email`,
+          data: {
+            role: "candidate",
+            firstName: data.firstName,
+            lastName: data.lastName,
+          },
+        },
+      });
+      if (error) throw error;
 
-      const response = await registerUser(payload); // ✅ Use centralized API helper
-
-      alert(response.message || "Registration successful! Please verify your email.");
-      reset(); // ✅ Reset form after successful submission
-      navigate("/login"); // ✅ Navigate to login page after success
-    } catch (error) {
-      alert(error.message || "Registration failed. Please try again.");
+      alert("Registration successful! Please check your email to verify your account.");
+      reset();
+      navigate("/login");
+    } catch (err) {
+      alert(err.message || "Registration failed. Please try again.");
     }
   };
 
@@ -134,6 +128,4 @@ const CandidateRegistration = () => {
       </Paper>
     </Container>
   );
-};
-
-export default CandidateRegistration;
+}

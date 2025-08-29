@@ -9,33 +9,27 @@ import {
   Typography,
   Button,
   FormControlLabel,
-  Checkbox
+  Checkbox,
 } from "@mui/material";
-
 import GlassTextField from "../ui/GlassTextField";
-import { registerUser } from "../../utils/api"; // ✅ Using centralized API calls
+import { supabase } from "../../utils/supabaseClient";
 import "../../styles/forms.css";
 
-// ✅ Yup Validation Schema
+// Validation
 const recruiterSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required."),
   lastName: Yup.string().required("Last name is required."),
-  email: Yup.string()
-    .email("Invalid email address.")
-    .required("Email is required."),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters.")
-    .required("Password is required."),
+  email: Yup.string().email("Invalid email address.").required("Email is required."),
+  password: Yup.string().min(6, "Password must be at least 6 characters.").required("Password is required."),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match.")
     .required("Please confirm your password."),
-  recruiterType: Yup.string()
-    .oneOf(["independent", "corporate"])
-    .required("Recruiter type is required."),
+  recruiterType: Yup.string().oneOf(["independent", "corporate"]).required("Recruiter type is required."),
 });
 
-const RecruiterRegistration = () => {
+export default function RecruiterRegistration() {
   const navigate = useNavigate();
+  const base = window.location.origin;
 
   const {
     register,
@@ -46,37 +40,39 @@ const RecruiterRegistration = () => {
     reset,
   } = useForm({
     resolver: yupResolver(recruiterSchema),
-    defaultValues: {
-      recruiterType: "independent",
-    },
+    defaultValues: { recruiterType: "independent" },
   });
 
   const recruiterType = watch("recruiterType");
 
   const onSubmit = async (data) => {
     try {
-      const payload = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+      // Sign up with Supabase; store profile + role in user_metadata for MVP
+      const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        userRole: "recruiter",
-        recruiterType: data.recruiterType,
-      };
+        options: {
+          emailRedirectTo: `${base}/verify-email`,
+          data: {
+            role: "recruiter",
+            firstName: data.firstName,
+            lastName: data.lastName,
+            recruiterType: data.recruiterType,
+          },
+        },
+      });
+      if (error) throw error;
 
-      const response = await registerUser(payload); // ✅ Using the shared API layer
-
-      alert(response.message || "Recruiter registered! Check your email for verification.");
+      alert("Recruiter registered! Check your email to confirm your account.");
       reset();
       navigate("/login");
-    } catch (error) {
-      alert(error.message || "Registration failed. Please try again.");
+    } catch (err) {
+      alert(err.message || "Registration failed. Please try again.");
     }
   };
 
   const handleCheckboxChange = (e) => {
-    const checked = e.target.checked;
-    setValue("recruiterType", checked ? "corporate" : "independent");
+    setValue("recruiterType", e.target.checked ? "corporate" : "independent");
   };
 
   return (
@@ -163,6 +159,4 @@ const RecruiterRegistration = () => {
       </Paper>
     </Container>
   );
-};
-
-export default RecruiterRegistration;
+}

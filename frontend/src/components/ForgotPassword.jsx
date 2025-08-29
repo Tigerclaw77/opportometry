@@ -1,39 +1,42 @@
+// src/components/ForgotPassword.jsx
 import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { resetPasswordRequest } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { Button, Paper, Container, Typography } from "@mui/material";
+import { supabase } from "../utils/supabaseClient";
 import "../styles/forms.css";
 import GlassTextField from "./ui/GlassTextField";
 
-// ✅ Validation schema
-const forgotPasswordSchema = Yup.object().shape({
+const schema = Yup.object({
   email: Yup.string().email("Invalid email").required("Email is required"),
 });
 
-const ForgotPassword = () => {
+export default function ForgotPassword() {
   const navigate = useNavigate();
+  const base = window.location.origin;
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: yupResolver(forgotPasswordSchema),
-  });
+  } = useForm({ resolver: yupResolver(schema) });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async ({ email }) => {
     try {
-      const response = await resetPasswordRequest(data.email);  
-      alert(response.message || "If an account exists for this email, a reset link has been sent.");
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${base}/reset-password`,
+      });
+      if (error) throw error;
+
+      alert("If an account exists for this email, a password-reset link has been sent.");
       navigate("/login");
-    } catch (error) {
-      console.error("Forgot password error:", error);
-      alert(error.message || "An error occurred.");
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      alert(err?.message || "An error occurred.");
     }
-  };  
+  };
 
   return (
     <Container maxWidth="sm">
@@ -61,12 +64,10 @@ const ForgotPassword = () => {
             fullWidth
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Sending..." : "Send Reset Link"}
+            {isSubmitting ? "Sending…" : "Send Reset Link"}
           </Button>
         </form>
       </Paper>
     </Container>
   );
-};
-
-export default ForgotPassword;
+}

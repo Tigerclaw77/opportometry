@@ -499,7 +499,49 @@ h6 {
   font-size: 14px;
   opacity: 0.8;
   cursor: default;
+  color:white;
 }
+
+/* Force footer text to white (wins over body, p, span rule) */
+.footer,
+.footer p,
+.footer span,
+.footer small,
+.footer a,
+.footer a:visited {
+  color: #fff !important;
+}
+
+.footer a:hover {
+  color: #cfe4ff !important;
+}
+
+
+/* ===== Page Dimmer (GLOBAL) ===== */
+
+.App { position: relative; }           /* host for stacking */
+
+.bg-dimmer{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;                          /* off by default */
+  transition: opacity .32s ease;
+  z-index: 2;                          /* below your app UI */
+  background: rgba(8,10,14,.68);
+}
+.bg-dimmer::after{
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(0,0,0,.18), transparent 60%);
+}
+
+/* Toggle on */
+body.dim-bg .bg-dimmer{ opacity: 1; }
+
+/* Make sure your UI is above the dimmer */
+header, .main-content, footer { position: relative; z-index: 3; }
+
 
 /* Responsive for larger screens */
 @media (min-width: 768px) {

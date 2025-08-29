@@ -1,55 +1,61 @@
-import React from "react";
+// src/components/ResetPassword.jsx
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { useNavigate, useLocation } from "react-router-dom";
-import { resetPassword } from "../utils/api"; // ✅ NEW IMPORT
-import { Button, Paper, Container, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Button, Paper, Container, Typography, CircularProgress } from "@mui/material";
+import { supabase } from "../utils/supabaseClient";
 import GlassTextField from "./ui/GlassTextField";
 import "../styles/forms.css";
 
-// ✅ Validation schema
-const resetPasswordSchema = Yup.object().shape({
-  newPassword: Yup.string()
-    .min(6, "Password must be at least 6 characters.")
-    .required("New password is required."),
+const schema = Yup.object({
+  newPassword: Yup.string().min(6, "Password must be at least 6 characters.").required("New password is required."),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("newPassword")], "Passwords must match.")
     .required("Please confirm your new password."),
 });
 
-const ResetPassword = () => {
+export default function ResetPassword() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // ✅ Extract token from URL query
-  const queryParams = new URLSearchParams(location.search);
-  const token = queryParams.get("token");
+  const [phase, setPhase] = useState("loading"); // "loading" | "form" | "done" | "error"
+  const [errorMsg, setErrorMsg] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({
-    resolver: yupResolver(resetPasswordSchema),
-  });
+  } = useForm({ resolver: yupResolver(schema) });
 
-  const onSubmit = async (data) => {
-    if (!token) {
-      alert("Invalid or missing token. Please check your email link.");
-      return;
-    }
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      if (!mounted) return;
+      if (error) {
+        setPhase("error");
+        setErrorMsg(error.message || "Invalid or expired recovery link. Please request a new email.");
+      } else {
+        setPhase("form");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
+  const onSubmit = async ({ newPassword }) => {
     try {
-      const response = await resetPassword(token, data.newPassword); // ✅ Use centralized API call
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
 
-      alert(response.message || "Password reset successful!");
+      await supabase.auth.signOut(); // end temporary recovery session
       reset();
-      navigate("/login", { replace: true });
-    } catch (error) {
-      console.error("🔴 Reset Password Error:", error);
-      alert(error.message || "Password reset failed.");
+      setPhase("done");
+    } catch (err) {
+      setPhase("error");
+      setErrorMsg(err?.message || "Password reset failed.");
     }
   };
 
@@ -60,42 +66,59 @@ const ResetPassword = () => {
           Reset Your Password
         </Typography>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <GlassTextField
-            label="New Password"
-            type="password"
-            {...register("newPassword")}
-            error={!!errors.newPassword}
-            helperText={errors.newPassword?.message}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
+        {phase === "loading" && (
+          <Typography align="center" sx={{ my: 2 }}>
+            <CircularProgress />
+          </Typography>
+        )}
 
-          <GlassTextField
-            label="Confirm New Password"
-            type="password"
-            {...register("confirmPassword")}
-            error={!!errors.confirmPassword}
-            helperText={errors.confirmPassword?.message}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
+        {phase === "error" && (
+          <Typography color="error" align="center" sx={{ my: 2 }}>
+            {errorMsg}
+          </Typography>
+        )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            className="glass-button"
-            fullWidth
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Resetting..." : "Reset Password"}
-          </Button>
-        </form>
+        {phase === "form" && (
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <GlassTextField
+              label="New Password"
+              type="password"
+              {...register("newPassword")}
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+            />
+
+            <GlassTextField
+              label="Confirm New Password"
+              type="password"
+              {...register("confirmPassword")}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+              fullWidth
+              variant="outlined"
+              margin="normal"
+            />
+
+            <Button type="submit" variant="contained" className="glass-button" fullWidth disabled={isSubmitting}>
+              {isSubmitting ? "Resetting..." : "Reset Password"}
+            </Button>
+          </form>
+        )}
+
+        {phase === "done" && (
+          <>
+            <Typography align="center" sx={{ my: 2 }}>
+              Your password has been updated. Please log in with your new password.
+            </Typography>
+            <Button variant="contained" className="glass-button" fullWidth onClick={() => navigate("/login")}>
+              Go to Login
+            </Button>
+          </>
+        )}
       </Paper>
     </Container>
   );
-};
-
-export default ResetPassword;
+}

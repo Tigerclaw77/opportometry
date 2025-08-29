@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { loginUser } from "../utils/api";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { login } from "../store/authSlice";
+import { login as loginRedux } from "../store/authSlice";
 import { fetchUserJobData } from "../store/jobSlice";
 import GlassTextField from "../components/ui/GlassTextField";
 import {
@@ -15,97 +14,152 @@ import {
   Paper,
   Container,
   Typography,
+  Stack,
 } from "@mui/material";
-
+import { supabase } from "../utils/supabaseClient";
 import "../styles/forms.css";
 
-// ✅ Yup validation schema
-const loginSchema = Yup.object().shape({
+// Validation
+const passwordSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
 
-const Login = () => {
-  console.log("🚀 Login component loaded");
+export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [formError, setFormError] = useState("");
+  const [sendingMagic, setSendingMagic] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [canResendVerify, setCanResendVerify] = useState(false);
+
+  const base = window.location.origin;
 
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
-  } = useForm({
-    resolver: yupResolver(loginSchema),
-  });
+  } = useForm({ resolver: yupResolver(passwordSchema) });
 
-  useEffect(() => {
-    console.log("🔥 Current validation errors:", errors);
-  }, [errors]);
-
+  const email = watch("email", "");
   const rememberMe = watch("rememberMe", false);
 
-  const onSubmit = async (data) => {
-    setFormError("");
-
+  useEffect(() => {
     try {
-      // Step 1: Send login request to backend
-      const response = await loginUser(data.email, data.password);
-      console.log("🧾 Full login response:", response);
+      localStorage.setItem("rememberMe", JSON.stringify(!!rememberMe));
+    } catch {}
+  }, [rememberMe]);
 
-      const { token, userRole, redirect, user } = response;
+  const roleFromUser = (user) =>
+    user?.app_metadata?.role || user?.user_metadata?.role || "candidate";
 
-      console.log("🔍 Received user from backend:", {
-        email: user.email,
-        isVerified: user.isVerified,
-        type: typeof user.isVerified,
+  const redirectForRole = (role) => {
+    if (role === "admin") return "/admin";
+    if (role === "recruiter") return "/recruiter/dashboard";
+    return "/candidate/dashboard";
+  };
+
+  const bootstrapReduxAfterSignIn = async (session) => {
+    const user = session?.user ?? (await supabase.auth.getUser()).data.user;
+    const token =
+      session?.access_token ||
+      (await supabase.auth.getSession()).data.session?.access_token;
+
+    const userRole = roleFromUser(user);
+
+    dispatch(
+      loginRedux({
+        token,
+        userRole,
+        user: {
+          id: user?.id,
+          email: user?.email,
+          isVerified: !!user?.email_confirmed_at,
+          ...user?.user_metadata,
+        },
+      })
+    );
+
+    // Stubbed for now—replace with real pulls later
+    dispatch(
+      fetchUserJobData({
+        savedJobs: [],
+        appliedJobs: [],
+        recruiterJobs: [],
+        hiddenJobs: [],
+      })
+    );
+
+    navigate(redirectForRole(userRole));
+  };
+
+  // --- Password login
+  const onPasswordLogin = async ({ email, password }) => {
+    setFormError("");
+    setCanResendVerify(false);
+    setSigningIn(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-
-      // Step 2: Check email verification
-      if (!user.isVerified) {
-        console.warn("⚠️ User not verified. Redirecting to email verification.");
-        return navigate("/email-verification", {
-          state: { reason: "unverified-login" },
-        });
+      if (error) throw error;
+      await bootstrapReduxAfterSignIn(data.session);
+    } catch (err) {
+      console.error("signInWithPassword error:", err);
+      const msg = err?.message || "Login failed. Please try again.";
+      if (/confirm|verified|not confirmed/i.test(msg)) {
+        setCanResendVerify(true);
       }
-
-      // Step 3: Save user to Redux store
-      dispatch(login({ token, userRole, user }));
-
-      // Step 4: Sync job interactions
-      dispatch(
-        fetchUserJobData({
-          savedJobs: user.savedJobs || [],
-          appliedJobs: user.appliedJobs || [],
-          recruiterJobs: user.recruiterJobs || [],
-          hiddenJobs: user.hiddenJobs || [],
-        })
-      );
-
-      // Step 5: Navigate to dashboard
-      navigate(redirect);
-    } catch (error) {
-      console.error("🔴 Backend error caught in login:", error);
-
-      // Log full Axios response if it exists
-      if (error.response) {
-        console.error("📬 Axios error response data:", error.response.data);
-        console.error("📦 Axios error response status:", error.response.status);
-        console.error("📨 Axios error response headers:", error.response.headers);
+      if (/password|credentials/i.test(msg)) {
+        setError("password", { type: "manual", message: msg });
+      } else {
+        setFormError(msg);
       }
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
-      const { fieldErrors, message } = error.response?.data || {};
+  // --- Magic link
+  const sendMagicLink = async () => {
+    setFormError("");
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      setError("email", { type: "manual", message: "Please enter a valid email" });
+      return;
+    }
+    setSendingMagic(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${base}/verify-email` },
+      });
+      if (error) throw error;
+      alert("Check your inbox for your sign-in link.");
+    } catch (err) {
+      console.error("signInWithOtp error:", err);
+      setFormError(err?.message || "Couldn’t send the magic link.");
+    } finally {
+      setSendingMagic(false);
+    }
+  };
 
-      if (fieldErrors) {
-        Object.entries(fieldErrors).forEach(([field, msg]) => {
-          setError(field, { type: "manual", message: msg });
-        });
-      }
-
-      setFormError(message || "Login failed. Please try again.");
+  // --- Resend verification (if password login fails due to unverified email)
+  const resendVerification = async () => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${base}/verify-email` },
+      });
+      if (error) throw error;
+      alert("Verification email sent. Please check your inbox.");
+    } catch (err) {
+      console.error("resend verification error:", err);
+      alert(err?.message || "Could not resend verification email.");
     }
   };
 
@@ -117,12 +171,12 @@ const Login = () => {
         </Typography>
 
         {formError && (
-          <Typography color="error" align="center" style={{ marginBottom: "10px" }}>
+          <Typography color="error" align="center" sx={{ mb: 1 }}>
             {formError}
           </Typography>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onPasswordLogin)} noValidate>
           <GlassTextField
             label="Email"
             type="email"
@@ -148,22 +202,40 @@ const Login = () => {
           <FormControlLabel
             control={<Checkbox {...register("rememberMe")} />}
             label="Remember Me"
-            style={{ color: "white" }}
+            sx={{ color: "white" }}
           />
 
-          <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+          {canResendVerify && (
+            <Typography align="center" sx={{ mt: 1 }}>
+              <Button size="small" onClick={resendVerification}>
+                Resend verification email
+              </Button>
+            </Typography>
+          )}
+
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
             <Button
               type="submit"
               variant="contained"
               className="glass-button"
-              disabled={isSubmitting}
+              disabled={signingIn}
             >
-              {isSubmitting ? "Logging in..." : "Log In"}
+              {signingIn ? "Logging in…" : "Log In"}
             </Button>
-          </div>
 
-          <Typography variant="body2" align="center" style={{ marginTop: "10px" }}>
-            <Link to="/forgot-password" style={{ textDecoration: "none", color: "#1976d2" }}>
+            <Button
+              type="button"
+              variant="outlined"
+              className="glass-button"
+              onClick={sendMagicLink}
+              disabled={sendingMagic}
+            >
+              {sendingMagic ? "Sending…" : "Send Magic Link"}
+            </Button>
+          </Stack>
+
+          <Typography variant="body2" align="center" sx={{ mt: 1.5 }}>
+            <Link to="/forgot-password" style={{ textDecoration: "none", color: "#90caf9" }}>
               Forgot Password?
             </Link>
           </Typography>
@@ -171,6 +243,4 @@ const Login = () => {
       </Paper>
     </Container>
   );
-};
-
-export default Login;
+}

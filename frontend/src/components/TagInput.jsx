@@ -1,190 +1,348 @@
 // components/TagInput.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import "../styles/forms.css";
 
 /**
- * Props:
- * - value: string[] (canonical tag ids)  ← recommended
- * - onChange(nextIds: string[])
- * - options: { id, label }[]   (already filtered for org)
+ * Multi-select Tag Input with searchable dropdown.
+ *
+ * Accepted props (all optional/defensive):
+ * - value: string[]                    // canonical tag ids (controlled). Falls back to []
+ * - onChange(nextIds: string[])        // if omitted, internal no-op to avoid crashes
+ * - options: { id, label }[] | string[]  // preferred source of choices
+ * - tags:    { id, label }[] | string[]  // legacy alias (will be normalized)
  * - maxSelected?: number
  * - placeholder?: string
+ * - disabled?: boolean
  */
-export default function TagInput({
-  value = [],
-  onChange,
-  options = [],
-  maxSelected,
-  placeholder = "Search approved tags…",
-}) {
+export default function TagInput(props) {
+  const {
+    value: valueProp,
+    onChange: onChangeProp,
+    options: optionsProp,
+    tags: tagsProp, // ← legacy/alt prop name
+    maxSelected,
+    placeholder = "Search approved tags…",
+    disabled = false,
+  } = props ?? {};
+
+  // ---------- Normalizers (defensive) ----------
+  const normalizeOptions = useCallback((arr) => {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .map((item) => {
+        if (!item) return null;
+        if (typeof item === "string") {
+          const s = item.trim();
+          if (!s) return null;
+          return { id: s, label: s };
+        }
+        const id = String(item.id ?? "").trim();
+        const label = String(item.label ?? item.name ?? item.title ?? item.id ?? "").trim();
+        if (!id || !label) return null;
+        return { id, label };
+      })
+      .filter(Boolean);
+  }, []);
+
+  const options = useMemo(
+    () => normalizeOptions(optionsProp ?? tagsProp ?? []),
+    [optionsProp, tagsProp, normalizeOptions]
+  );
+
+  const value = useMemo(() => (Array.isArray(valueProp) ? valueProp.filter(Boolean) : []), [valueProp]);
+
+  // onChange fallback to avoid runtime crashes if not provided
+  const onChange = useCallback((next) => {
+    if (typeof onChangeProp === "function") {
+      onChangeProp(next);
+    } else {
+      // no-op: still keep UX responsive without throwing
+      // (You can log or warn here if desired)
+    }
+  }, [onChangeProp]);
+
+  // ---------- UI state ----------
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+
   const inputRef = useRef(null);
+  const rootRef = useRef(null);
   const listRef = useRef(null);
 
-  const selected = useMemo(() => new Set(value), [value]);
+  const cx = (...xs) => xs.filter(Boolean).join(" ");
 
+  // Maps & selected
+  const byId = useMemo(() => {
+    const m = new Map();
+    for (const opt of options) m.set(opt.id, opt);
+    return m;
+  }, [options]);
+
+  const selectedSet = useMemo(() => new Set(value), [value]);
+
+  // Keep only known ids (defensive against stale/unknown ids)
+  const selectedOptions = useMemo(
+    () => value.map((id) => byId.get(id)).filter(Boolean),
+    [value, byId]
+  );
+
+  const canAddMore =
+    typeof maxSelected === "number" ? selectedOptions.length < maxSelected : true;
+
+  // Filtered list (exclude already selected)
   const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    let base = options.filter((o) => !selected.has(o.id));
-    if (q) {
-      base = base.filter(
-        (o) =>
-          o.label.toLowerCase().includes(q) ||
-          o.id.includes(q.replace(/\s+/g, "-"))
-      );
-      base.sort((a, b) => {
-        const aStarts = a.label.toLowerCase().startsWith(q) ? -1 : 0;
-        const bStarts = b.label.toLowerCase().startsWith(q) ? -1 : 0;
-        if (aStarts !== bStarts) return aStarts - bStarts;
-        return a.label.localeCompare(b.label);
-      });
-    } else {
-      base.sort((a, b) => a.label.localeCompare(b.label));
-    }
-    return base.slice(0, 100);
-  }, [options, selected, query]);
+    const q = (query || "").trim().toLowerCase();
+    const base = options.filter((o) => !selectedSet.has(o.id));
+    if (!q) return base.slice(0, 250);
+    return base.filter((o) => o.label.toLowerCase().includes(q)).slice(0, 250);
+  }, [options, selectedSet, query]);
 
+  // Maintain active index sanity
+  useEffect(() => {
+    if (!open) return;
+    if (filtered.length === 0) {
+      setActiveIndex(-1);
+    } else if (activeIndex < 0 || activeIndex >= filtered.length) {
+      setActiveIndex(0);
+    }
+  }, [filtered, open, activeIndex]);
+
+  // Click-outside to close
   useEffect(() => {
     const onDoc = (e) => {
-      if (!listRef.current && !inputRef.current) return;
-      const root = inputRef.current?.closest(".tag-input-container");
-      if (root && !root.contains(e.target)) setOpen(false);
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  function add(id) {
-    if (!id) return;
-    if (maxSelected && value.length >= maxSelected) return;
-    if (selected.has(id)) return;
-    onChange?.([...value, id]);
-    setQuery("");
-    setOpen(false);
-    requestAnimationFrame(() => inputRef.current?.focus());
-  }
-
-  function remove(id) {
-    onChange?.(value.filter((v) => v !== id));
-    requestAnimationFrame(() => inputRef.current?.focus());
-  }
-
-  function handleKeyDown(e) {
-    if (e.key === "Backspace" && !query && value.length) {
-      e.preventDefault();
-      remove(value[value.length - 1]);
-      return;
+  // Keep active item visible
+  useEffect(() => {
+    if (!open || activeIndex < 0) return;
+    const el = listRef.current?.querySelector(`[data-index="${activeIndex}"]`);
+    if (el && el.scrollIntoView) {
+      const parent = listRef.current;
+      const elTop = el.offsetTop;
+      const elBottom = elTop + el.offsetHeight;
+      const viewTop = parent.scrollTop;
+      const viewBottom = viewTop + parent.clientHeight;
+      if (elTop < viewTop || elBottom > viewBottom) {
+        el.scrollIntoView({ block: "nearest" });
+      }
     }
-    if (open && ["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
-      e.preventDefault();
-      const max = Math.max(0, filtered.length - 1);
-      if (e.key === "ArrowDown") setActiveIndex((i) => Math.min(i + 1, max));
-      if (e.key === "ArrowUp") setActiveIndex((i) => Math.max(i - 1, 0));
-      if (e.key === "Home") setActiveIndex(0);
-      if (e.key === "End") setActiveIndex(max);
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (open && filtered[activeIndex]) add(filtered[activeIndex].id);
-      return;
-    }
-    if (e.key === "Escape") setOpen(false);
-  }
+  }, [activeIndex, open]);
 
-  const atLimit = maxSelected && value.length >= maxSelected;
+  // ---------- Actions ----------
+  const addTag = useCallback(
+    (opt) => {
+      if (!opt || selectedSet.has(opt.id)) return;
+      if (!canAddMore) return;
+      const next = [...value, opt.id];
+      onChange(next);
+      setQuery("");
+      setOpen(true);
+      setActiveIndex(0);
+      inputRef.current?.focus();
+    },
+    [selectedSet, canAddMore, value, onChange]
+  );
+
+  const removeTag = useCallback(
+    (id) => {
+      if (!selectedSet.has(id)) return;
+      const next = value.filter((x) => x !== id);
+      onChange(next);
+      inputRef.current?.focus();
+    },
+    [selectedSet, value, onChange]
+  );
+
+  const clearAll = useCallback(() => {
+    if (selectedOptions.length === 0) return;
+    onChange([]);
+    inputRef.current?.focus();
+  }, [selectedOptions.length, onChange]);
+
+  const onKeyDown = (e) => {
+    if (disabled) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!open) setOpen(true);
+        if (filtered.length > 0) {
+          setActiveIndex((i) => Math.min((i < 0 ? -1 : i) + 1, filtered.length - 1));
+        }
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        if (!open) setOpen(true);
+        if (filtered.length > 0) {
+          setActiveIndex((i) => Math.max((i < 0 ? filtered.length : i) - 1, 0));
+        }
+        break;
+
+      case "Enter":
+        if (open && activeIndex >= 0 && activeIndex < filtered.length) {
+          e.preventDefault();
+          addTag(filtered[activeIndex]);
+        }
+        break;
+
+      case "Escape":
+        if (open) {
+          e.preventDefault();
+          setOpen(false);
+        }
+        break;
+
+      case "Backspace":
+        if (query === "" && selectedOptions.length > 0) {
+          removeTag(selectedOptions[selectedOptions.length - 1].id);
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const listboxId = "taginput-listbox";
+  const activeOpt = open && activeIndex >= 0 ? filtered[activeIndex] : null;
+  const activeDescId = activeOpt ? `tagopt-${activeOpt.id}` : undefined;
 
   return (
-    <div className="tag-input-container" style={{ position: "relative" }}>
-      <div className="tag-list" onClick={() => inputRef.current?.focus()}>
-        {value.map((id) => {
-          const opt = options.find((o) => o.id === id) || { id, label: id };
-          return (
-            <span key={id} className="tag">
-              {opt.label}
+    <div
+      ref={rootRef}
+      className={cx("tag-input-root", disabled && "opacity-60 pointer-events-none")}
+    >
+      {/* Selected chips */}
+      {selectedOptions.length > 0 && (
+        <div className="tag-chip-row">
+          {selectedOptions.map((opt) => (
+            <span key={opt.id} className="tag-chip">
+              <span className="tag-chip-label">{opt.label}</span>
               <button
-                className="remove-tag"
                 type="button"
-                onClick={() => remove(id)}
+                className="tag-chip-x"
                 aria-label={`Remove ${opt.label}`}
+                onClick={() => removeTag(opt.id)}
               >
-                &times;
+                ×
               </button>
             </span>
-          );
-        })}
+          ))}
+          <button
+            type="button"
+            className="tag-chip-clear"
+            onClick={clearAll}
+            aria-label="Clear all"
+            title="Clear all"
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
+      {/* Combobox input */}
+      <div
+        className={cx("tag-input-wrap", open && "is-open", !canAddMore && "is-maxed")}
+        onClick={() => {
+          if (disabled) return;
+          setOpen(true);
+          inputRef.current?.focus();
+        }}
+      >
         <input
           ref={inputRef}
-          className="tag-input"
           type="text"
           value={query}
-          placeholder={atLimit ? `Max ${maxSelected} tags` : placeholder}
           onChange={(e) => {
             setQuery(e.target.value);
-            setOpen(true);
+            if (!open) setOpen(true);
             setActiveIndex(0);
           }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={handleKeyDown}
-          disabled={!!atLimit}
-          // ✅ A11y: combobox pattern
+          onKeyDown={onKeyDown}
+          placeholder={
+            !canAddMore && selectedOptions.length > 0
+              ? `Max ${maxSelected} selected`
+              : placeholder
+          }
+          className="tag-input"
+          aria-autocomplete="list"
           role="combobox"
           aria-expanded={open}
-          aria-haspopup="listbox"
-          aria-controls="tag-suggestions"
-          aria-autocomplete="list"
-          aria-activedescendant={
-            open && filtered[activeIndex]
-              ? `tagopt-${filtered[activeIndex].id}`
-              : undefined
-          }
+          aria-controls={listboxId}
+          aria-activedescendant={activeDescId}
+          disabled={disabled || !canAddMore}
         />
-      </div>
-
-      {open && filtered.length > 0 && (
-        <div
-          ref={listRef}
-          id="tag-suggestions"
-          role="listbox"
-          className="tag-dropdown"
-          style={{
-            position: "absolute",
-            zIndex: 50,
-            top: "100%",
-            left: 0,
-            right: 0,
-            marginTop: 6,
-            maxHeight: 240,
-            overflowY: "auto",
+        <button
+          type="button"
+          className="tag-caret"
+          aria-label={open ? "Close" : "Open"}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (disabled) return;
+            setOpen((v) => !v);
+            inputRef.current?.focus();
           }}
         >
-          {filtered.map((opt, i) => {
-            const active = i === activeIndex;
-            return (
-              <div
-                key={opt.id}
-                role="option"
-                aria-selected={active}
-                className={`tag-option${active ? " active" : ""}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => add(opt.id)}
-                onMouseEnter={() => setActiveIndex(i)}
-                style={{
-                  padding: "8px 10px",
-                  cursor: "pointer",
-                  background: active ? "rgba(59,130,246,0.12)" : undefined,
-                }}
-                title={`${opt.label}`}
-              >
-                {opt.label}
-              </div>
-            );
-          })}
+          ▾
+        </button>
+      </div>
+
+      {/* Dropdown list */}
+      {open && (
+        <div className="tag-listbox-wrap">
+          <ul id={listboxId} ref={listRef} role="listbox" className="tag-listbox">
+            {filtered.length === 0 ? (
+              <li className="tag-empty" aria-disabled="true">
+                {query ? "No matches" : "Start typing to search…"}
+              </li>
+            ) : (
+              filtered.map((opt, idx) => {
+                const isActive = idx === activeIndex;
+                return (
+                  <li
+                    key={opt.id}
+                    id={`tagopt-${opt.id}`}
+                    data-index={idx}
+                    role="option"
+                    aria-selected={isActive}
+                    className={cx("tag-option", isActive && "is-active")}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => addTag(opt)}
+                  >
+                    <MatchHighlighter text={opt.label} query={query} />
+                  </li>
+                );
+              })
+            )}
+          </ul>
         </div>
       )}
     </div>
+  );
+}
+
+function MatchHighlighter({ text, query }) {
+  if (!query) return <span>{text}</span>;
+  const q = (query || "").trim();
+  if (!q) return <span>{text}</span>;
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i === -1) return <span>{text}</span>;
+  const before = text.slice(0, i);
+  const match = text.slice(i + 0, i + q.length);
+  const after = text.slice(i + q.length);
+  return (
+    <span>
+      {before}
+      <mark className="tag-match">{match}</mark>
+      {after}
+    </span>
   );
 }

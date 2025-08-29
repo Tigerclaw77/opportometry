@@ -224,3 +224,26 @@ body {
     gap: 40px;
   }
 }
+
+
+/* Page dimmer sits between the background and your UI */
+.bg-dimmer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .35s ease;
+  z-index: 3;                         /* Put your main content above this */
+  background: rgba(8,10,14,.68);
+}
+.bg-dimmer::after{
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(0,0,0,.18), transparent 60%);
+}
+
+/* When active, fade in */
+body.dim-bg .bg-dimmer{ opacity:1; }
+
+/* Ensure the content layer is above the dimmer */
+#root, .site-shell, .jobs-page { position:relative; z-index:4; }
